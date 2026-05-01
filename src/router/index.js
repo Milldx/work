@@ -5,6 +5,7 @@ import SurveyView from '../views/SurveyView.vue'
 import WorkoutView from '../views/WorkoutView.vue'
 import NutritionView from '../views/NutritionView.vue'
 import ProgramView from '../views/ProgramView.vue'
+import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/workout', component: WorkoutView },
     { path: '/nutrition', component: NutritionView },
     { path: '/program', component: ProgramView },
+    { path: '/login', component: LoginView },
   ],
 })
 
