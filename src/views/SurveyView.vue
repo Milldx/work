@@ -4,31 +4,37 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// Текущий шаг анкеты (всего 3 шага)
 const currentStep = ref(1)
 const totalSteps = 3
 
+// Все ответы пользователя — сохраним в localStorage
 const form = reactive({
-  goal: '',
-  level: '',
-  height: '',
-  weight: '',
-  waist: '',
-  chest: '',
-  bicep: '',
-  hip: '',
+  goal: '',      // Цель: loss / mass / keep
+  level: '',     // Уровень: beginner / middle / advanced
+  height: '',    // Рост в см
+  weight: '',    // Вес в кг
+  waist: '',     // Талия в см
+  chest: '',     // Грудь в см
+  bicep: '',     // Бицепс в см
+  hip: '',       // Бёдра в см
 })
 
+// Ошибки для каждого шага
 const errors = reactive({
   goal: '',
   level: '',
   body: '',
 })
 
+// Переход на следующий шаг с проверкой
 function nextStep() {
+  // Шаг 1 — проверяем что цель выбрана
   if (currentStep.value === 1) {
     if (!form.goal) { errors.goal = 'Выбери цель'; return }
     errors.goal = ''
   }
+  // Шаг 2 — проверяем что уровень выбран
   if (currentStep.value === 2) {
     if (!form.level) { errors.level = 'Выбери уровень'; return }
     errors.level = ''
@@ -36,30 +42,37 @@ function nextStep() {
   currentStep.value++
 }
 
+// Возврат на предыдущий шаг
 function prevStep() {
   currentStep.value--
 }
 
+// Финальная отправка — сохраняем всё в localStorage
 function submit() {
+  // Рост и вес обязательны
   if (!form.height || !form.weight) {
     errors.body = 'Укажи рост и вес — они обязательны'
     return
   }
   errors.body = ''
 
+  // Берём текущего пользователя из localStorage
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
 
-  currentUser.goal = form.goal
-  currentUser.level = form.level
+  // Добавляем к нему все ответы анкеты
+  currentUser.goal   = form.goal
+  currentUser.level  = form.level
   currentUser.height = form.height
   currentUser.weight = form.weight
-  currentUser.waist = form.waist
-  currentUser.chest = form.chest
-  currentUser.bicep = form.bicep
-  currentUser.hip = form.hip
+  currentUser.waist  = form.waist
+  currentUser.chest  = form.chest
+  currentUser.bicep  = form.bicep
+  currentUser.hip    = form.hip
 
+  // Сохраняем обновлённого пользователя
   localStorage.setItem('currentUser', JSON.stringify(currentUser))
 
+  // Обновляем его и в общем списке пользователей
   const users = JSON.parse(localStorage.getItem('users') || '[]')
   for (let i = 0; i < users.length; i++) {
     if (users[i].login === currentUser.login) {
@@ -69,9 +82,11 @@ function submit() {
   }
   localStorage.setItem('users', JSON.stringify(users))
 
+  // Переходим на страницу программы
   router.push('/program')
 }
 
+// Варианты целей — используются для рендера кнопок
 const goals = [
   {
     id: 'loss',
@@ -93,37 +108,45 @@ const goals = [
   },
 ]
 
+// Варианты уровней подготовки
 const levels = [
-  { id: 'beginner', label: 'Новичок', desc: 'Тренируюсь менее 6 месяцев' },
-  { id: 'middle',   label: 'Средний', desc: 'Тренируюсь от 6 месяцев до 2 лет' },
-  { id: 'advanced', label: 'Продвинутый', desc: 'Тренируюсь более 2 лет' },
+  { id: 'beginner', label: 'Новичок',      desc: 'Тренируюсь менее 6 месяцев' },
+  { id: 'middle',   label: 'Средний',      desc: 'Тренируюсь от 6 месяцев до 2 лет' },
+  { id: 'advanced', label: 'Продвинутый',  desc: 'Тренируюсь более 2 лет' },
 ]
 </script>
 
 <template>
   <div class="page">
+    <!-- Светящийся фон -->
     <div class="glow"></div>
 
     <div class="box">
       <p class="page-label">Анкета</p>
       <h1 class="page-title">Расскажи о себе</h1>
 
-      <!-- Прогресс -->
+      <!-- Прогресс — три полоски, активная белая -->
       <div class="progress">
         <div class="progress-steps">
           <div
             v-for="n in totalSteps"
             :key="n"
-            :class="['progress-step', { 'progress-step--done': n < currentStep, 'progress-step--active': n === currentStep }]"
+            :class="[
+              'progress-step',
+              { 'progress-step--done': n < currentStep },
+              { 'progress-step--active': n === currentStep }
+            ]"
           ></div>
         </div>
         <p class="progress-text">Шаг {{ currentStep }} из {{ totalSteps }}</p>
       </div>
 
-      <!-- Шаг 1 — Цель -->
+      <!-- Шаг 1 — Выбор цели -->
       <div v-if="currentStep === 1" class="step">
         <p class="step-title">Твоя цель</p>
+
         <div class="goals-grid">
+          <!-- v-for — рисуем кнопку для каждой цели из массива goals -->
           <button
             v-for="g in goals"
             :key="g.id"
@@ -131,6 +154,7 @@ const levels = [
             :class="['goal-btn', { 'goal-btn--active': form.goal === g.id }]"
             @click="form.goal = g.id; errors.goal = ''"
           >
+            <!-- v-html вставляет SVG иконку как HTML -->
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" v-html="g.icon"></svg>
             <div>
               <p class="goal-label">{{ g.label }}</p>
@@ -138,7 +162,9 @@ const levels = [
             </div>
           </button>
         </div>
+
         <p v-if="errors.goal" class="field-error">{{ errors.goal }}</p>
+
         <button class="btn-submit" @click="nextStep">
           Далее
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -148,10 +174,12 @@ const levels = [
         </button>
       </div>
 
-      <!-- Шаг 2 — Уровень -->
+      <!-- Шаг 2 — Выбор уровня подготовки -->
       <div v-if="currentStep === 2" class="step">
         <p class="step-title">Уровень подготовки</p>
+
         <div class="options-col">
+          <!-- v-for — кнопка для каждого уровня из массива levels -->
           <button
             v-for="l in levels"
             :key="l.id"
@@ -163,12 +191,15 @@ const levels = [
               <p class="option-label">{{ l.label }}</p>
               <p class="option-desc">{{ l.desc }}</p>
             </div>
+            <!-- Галочка появляется только у выбранного уровня -->
             <svg v-if="form.level === l.id" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </button>
         </div>
+
         <p v-if="errors.level" class="field-error">{{ errors.level }}</p>
+
         <div class="btn-row">
           <button class="btn-back" @click="prevStep">Назад</button>
           <button class="btn-submit btn-submit--flex" @click="nextStep">
@@ -186,6 +217,7 @@ const levels = [
         <p class="step-title">Параметры тела</p>
         <p class="step-hint">Рост и вес обязательны. Остальное — по желанию.</p>
 
+        <!-- Сетка из 2 колонок для полей параметров -->
         <div class="body-grid">
           <div class="field">
             <label>Рост (см) *</label>
@@ -232,6 +264,7 @@ const levels = [
 </template>
 
 <style scoped>
+/* Страница — тёмный фон, контент по центру */
 .page {
   min-height: 100vh;
   background: #06080F;
@@ -244,6 +277,7 @@ const levels = [
   overflow: hidden;
 }
 
+/* Анимированный синий градиент на фоне */
 .glow {
   position: absolute;
   inset: 0;
@@ -257,6 +291,7 @@ const levels = [
   50% { opacity: 0.6; }
 }
 
+/* Контейнер — анимируется снизу вверх при загрузке */
 .box {
   width: 100%;
   max-width: 520px;
@@ -288,7 +323,7 @@ const levels = [
   line-height: 1;
 }
 
-/* Прогресс */
+/* Три полоски прогресса */
 .progress { margin-bottom: 40px; }
 
 .progress-steps {
@@ -305,7 +340,9 @@ const levels = [
   transition: background .4s;
 }
 
-.progress-step--done { background: rgba(255,255,255,0.4); }
+/* Пройденный шаг — полупрозрачный */
+.progress-step--done   { background: rgba(255,255,255,0.4); }
+/* Текущий шаг — белый */
 .progress-step--active { background: #FFFFFF; }
 
 .progress-text {
@@ -316,6 +353,7 @@ const levels = [
   color: rgba(255,255,255,0.25);
 }
 
+/* Каждый шаг анимируется при появлении */
 .step { animation: fadeUp 0.4s ease both; }
 
 .step-title {
@@ -335,7 +373,7 @@ const levels = [
   line-height: 1.6;
 }
 
-/* Цели */
+/* Кнопки целей */
 .goals-grid {
   display: flex;
   flex-direction: column;
@@ -363,6 +401,7 @@ const levels = [
   background: rgba(255,255,255,0.04);
 }
 
+/* Активная цель — светлая рамка */
 .goal-btn--active {
   border-color: rgba(255,255,255,0.4);
   background: rgba(255,255,255,0.07);
@@ -385,7 +424,7 @@ const levels = [
 
 .goal-btn--active .goal-desc { color: rgba(255,255,255,0.5); }
 
-/* Уровень */
+/* Кнопки уровней */
 .options-col {
   display: flex;
   flex-direction: column;
@@ -432,7 +471,7 @@ const levels = [
   color: rgba(255,255,255,0.3);
 }
 
-/* Параметры тела */
+/* Сетка параметров тела — 2 колонки */
 .body-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -466,13 +505,14 @@ input {
 }
 
 input::placeholder { color: rgba(255,255,255,0.18); }
+
 input:focus {
   outline: none;
   border-color: rgba(255,255,255,0.25);
   background: rgba(255,255,255,0.05);
 }
 
-/* Кнопки */
+/* Ряд кнопок — назад и далее рядом */
 .btn-row {
   display: flex;
   gap: 10px;
@@ -500,6 +540,7 @@ input:focus {
   transition: opacity .2s;
 }
 
+/* Кнопка без margin когда стоит рядом с "Назад" */
 .btn-submit--flex { margin-top: 0; flex: 1; }
 .btn-submit:hover { opacity: 0.85; }
 
