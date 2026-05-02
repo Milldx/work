@@ -114,6 +114,100 @@ onMounted(function() {
       </div>
     </section>
 
+    <!-- Статистика -->
+<section class="stats">
+  <div class="stat-item animate-on-scroll">
+    <p class="stat-num">12+</p>
+    <p class="stat-label">Программ тренировок</p>
+  </div>
+  <div class="stat-item animate-on-scroll" style="transition-delay:0.1s">
+    <p class="stat-num">50+</p>
+    <p class="stat-label">Упражнений в базе</p>
+  </div>
+  <div class="stat-item animate-on-scroll" style="transition-delay:0.2s">
+    <p class="stat-num">3</p>
+    <p class="stat-label">Уровня подготовки</p>
+  </div>
+  <div class="stat-item animate-on-scroll" style="transition-delay:0.3s">
+    <p class="stat-num">10+</p>
+    <p class="stat-label">Видов спортпита</p>
+  </div>
+</section>
+
+<!-- Как это работает -->
+<section class="how">
+  <div class="how-header animate-on-scroll">
+    <p class="plans-label">Процесс</p>
+    <h2 class="plans-title">Как это работает</h2>
+    <p class="plans-subtitle">Три шага до персональной программы</p>
+  </div>
+
+  <div class="how-steps">
+    <div class="how-step animate-on-scroll">
+      <div class="how-step-num">01</div>
+      <div class="how-step-line"></div>
+      <div class="how-step-content">
+        <div class="how-step-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h3 class="how-step-title">Регистрация</h3>
+        <p class="how-step-text">Создай аккаунт — это займёт меньше минуты</p>
+      </div>
+    </div>
+
+    <div class="how-step animate-on-scroll" style="transition-delay:0.1s">
+      <div class="how-step-num">02</div>
+      <div class="how-step-line"></div>
+      <div class="how-step-content">
+        <div class="how-step-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <h3 class="how-step-title">Анкета</h3>
+        <p class="how-step-text">Укажи цель, уровень подготовки и параметры тела</p>
+      </div>
+    </div>
+
+    <div class="how-step animate-on-scroll" style="transition-delay:0.2s">
+      <div class="how-step-num">03</div>
+      <div class="how-step-line how-step-line--last"></div>
+      <div class="how-step-content">
+        <div class="how-step-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3 class="how-step-title">Твоя программа</h3>
+        <p class="how-step-text">Получи личный план тренировок и начни заниматься</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Мотивационный баннер -->
+<section class="banner animate-on-scroll">
+  <div class="banner-glow"></div>
+  <div class="banner-content">
+    <p class="banner-label">Начни сегодня</p>
+    <h2 class="banner-title">Твоё тело — твой проект</h2>
+    <p class="banner-desc">Пройди анкету за 2 минуты и получи персональную программу бесплатно</p>
+    <RouterLink to="/register" class="banner-btn">
+      Попробовать бесплатно
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </RouterLink>
+  </div>
+</section>
+
     <!-- Подписка -->
     <section class="plans">
       <div class="plans-header animate-on-scroll">
@@ -428,4 +522,175 @@ onMounted(function() {
   color: #06080F;
   border-color: #FFFFFF;
 }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.stat-item {
+  padding: 48px 40px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  transition: background .25s, opacity 0.7s ease, transform 0.7s ease;
+}
+
+.stat-item:last-child { border-right: none; }
+.stat-item:hover { background: rgba(255,255,255,0.02); }
+
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: #FFFFFF;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+
+/* Как это работает */
+.how {
+  padding: 100px 80px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.how-header {
+  margin-bottom: 64px;
+}
+
+.how-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.how-step {
+  display: grid;
+  grid-template-columns: 60px 1px 1fr;
+  gap: 0 32px;
+  align-items: start;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.how-step-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.2);
+  padding-top: 24px;
+  text-align: right;
+}
+
+.how-step-line {
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+  align-self: stretch;
+  min-height: 100px;
+}
+
+.how-step-line--last { min-height: 0; }
+
+.how-step-content {
+  padding: 20px 0 48px 0;
+}
+
+.how-step-icon {
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 14px;
+  transition: color .25s;
+}
+
+.how-step:hover .how-step-icon { color: rgba(255,255,255,0.7); }
+
+.how-step-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.how-step-text {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.8;
+}
+
+/* Баннер */
+.banner {
+  position: relative;
+  padding: 100px 80px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.banner-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(20, 60, 140, 0.4) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.banner-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 16px;
+}
+
+.banner-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.banner-desc {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.8;
+  margin-bottom: 36px;
+}
+
+.banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  background: #FFFFFF;
+  color: #06080F;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: opacity .2s;
+}
+
+.banner-btn:hover { opacity: 0.85; }
 </style>
