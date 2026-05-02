@@ -32,10 +32,10 @@ function choosePlan(planId) {
   router.push('/register')
 }
 
-// Анимации при скролле
+// Анимация при скролле для обычных блоков
 onMounted(function() {
+  // Обычные анимации
   const elements = document.querySelectorAll('.animate-on-scroll')
-
   const observer = new IntersectionObserver(function(entries) {
     for (let i = 0; i < entries.length; i++) {
       if (entries[i].isIntersecting) {
@@ -47,6 +47,34 @@ onMounted(function() {
   for (let i = 0; i < elements.length; i++) {
     observer.observe(elements[i])
   }
+
+  // Анимация строк текста при скролле
+  const lines = document.querySelectorAll('.hero-line')
+
+  function onScroll() {
+    const scrollY = window.scrollY
+    const windowH = window.innerHeight
+
+    for (let i = 0; i < lines.length; i++) {
+      const rect = lines[i].getBoundingClientRect()
+      const center = rect.top + rect.height / 2
+
+      // Расстояние от центра экрана
+      const distFromCenter = Math.abs(center - windowH * 0.45)
+      const maxDist = windowH * 0.5
+
+      // Чем ближе к центру — тем ярче
+      const brightness = 1 - Math.min(distFromCenter / maxDist, 1)
+
+      // opacity от 0.1 до 1
+      const opacity = 0.1 + brightness * 0.9
+
+      lines[i].style.opacity = opacity
+    }
+  }
+
+  window.addEventListener('scroll', onScroll)
+  onScroll() // запустить сразу
 })
 </script>
 
@@ -59,8 +87,9 @@ onMounted(function() {
       <div class="hero-content">
         <p class="hero-label">Персональный фитнес</p>
         <h1 class="hero-title">
-          Тренируйся<br />
-          <span class="hero-accent">в своём ритме</span>
+          <span class="hero-line">Тренируйся</span>
+          <span class="hero-line hero-line--dim">в своём</span>
+          <span class="hero-line hero-line--dim">ритме</span>
         </h1>
         <p class="hero-desc">
           Программа под твои цели.<br/>Пройди анкету — получи личный план.
@@ -92,11 +121,14 @@ onMounted(function() {
       <div class="feature-card animate-on-scroll" style="transition-delay: 0.1s">
         <div class="feature-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-            <line x1="6" y1="1" x2="6" y2="4"/>
-            <line x1="10" y1="1" x2="10" y2="4"/>
-            <line x1="14" y1="1" x2="14" y2="4"/>
+            <path d="M6.5 6.5h11"/>
+            <path d="M6.5 17.5h11"/>
+            <path d="M3 8.5v7"/>
+            <path d="M21 8.5v7"/>
+            <path d="M1 10v4"/>
+            <path d="M23 10v4"/>
+            <path d="M3 8.5a2 2 0 0 1 2-2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2"/>
+            <path d="M21 8.5a2 2 0 0 0-2-2h-1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1a2 2 0 0 0 2-2"/>
           </svg>
         </div>
         <h3 class="feature-title">База упражнений</h3>
@@ -693,4 +725,25 @@ onMounted(function() {
 }
 
 .banner-btn:hover { opacity: 0.85; }
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: #FFFFFF;
+  letter-spacing: 0.03em;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-line {
+  display: block;
+  transition: opacity 0.1s ease;
+  opacity: 1;
+}
+
+.hero-line--dim {
+  opacity: 0.2;
+}
 </style>

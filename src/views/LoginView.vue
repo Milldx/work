@@ -4,11 +4,13 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// Данные формы входа
 const form = reactive({
   login: '',
   password: '',
 })
 
+// Ошибки под полями
 const errors = reactive({
   login: '',
   password: '',
@@ -16,11 +18,13 @@ const errors = reactive({
 
 const hasErrors = ref(false)
 
+// Функция входа
 function submit() {
   hasErrors.value = false
   errors.login = ''
   errors.password = ''
 
+  // Проверяем что поля заполнены
   if (!form.login) {
     errors.login = 'Введи логин'
     hasErrors.value = true
@@ -33,8 +37,10 @@ function submit() {
 
   if (hasErrors.value) return
 
+  // Берём список пользователей из localStorage
   const users = JSON.parse(localStorage.getItem('users') || '[]')
 
+  // Ищем пользователя с таким логином и паролем
   let foundUser = null
   for (let i = 0; i < users.length; i++) {
     if (users[i].login === form.login && users[i].password === form.password) {
@@ -43,11 +49,13 @@ function submit() {
     }
   }
 
+  // Если не нашли — показываем ошибку
   if (!foundUser) {
     errors.login = 'Неверный логин или пароль'
     return
   }
 
+  // Сохраняем текущего пользователя и идём на программу
   localStorage.setItem('currentUser', JSON.stringify(foundUser))
   router.push('/program')
 }
@@ -55,9 +63,11 @@ function submit() {
 
 <template>
   <div class="page">
+    <!-- Светящийся фон -->
     <div class="glow"></div>
 
     <div class="box">
+      <!-- Кнопка назад -->
       <RouterLink to="/" class="back-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="19" y1="12" x2="5" y2="12"/>
@@ -79,6 +89,7 @@ function submit() {
           placeholder="Твой логин"
           :class="{ 'input--error': errors.login }"
         />
+        <!-- Показываем ошибку только если она есть -->
         <p v-if="errors.login" class="field-error">{{ errors.login }}</p>
       </div>
 
@@ -102,6 +113,7 @@ function submit() {
         </svg>
       </button>
 
+      <!-- Ссылка на регистрацию -->
       <p class="auth-link">
         Нет аккаунта?
         <RouterLink to="/register">Зарегистрироваться</RouterLink>
@@ -218,6 +230,7 @@ input {
 }
 
 input::placeholder { color: rgba(255,255,255,0.18); }
+
 input:focus {
   outline: none;
   border-color: rgba(255,255,255,0.25);

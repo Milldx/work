@@ -1,9 +1,11 @@
 <script setup>
+// Импортируем роутер для навигации и футер
 import { useRouter } from 'vue-router'
 import AppFooter from './components/AppFooter.vue'
 
 const router = useRouter()
 
+// Функция выхода — чистим localStorage и идём на главную
 function logout() {
   localStorage.clear()
   router.push('/')
@@ -11,33 +13,36 @@ function logout() {
 </script>
 
 <template>
+  <!-- Шапка сайта — фиксированная, всегда сверху -->
   <header class="header">
+    <!-- Логотип — ведёт на главную -->
     <RouterLink to="/" class="logo">FITNESS</RouterLink>
 
+    <!-- Навигационные ссылки по разделам -->
     <nav class="nav-links">
       <RouterLink to="/workout" class="nav-link">Тренировки</RouterLink>
       <RouterLink to="/nutrition" class="nav-link">Питание</RouterLink>
       <RouterLink to="/program" class="nav-link">Моя программа</RouterLink>
     </nav>
 
+    <!-- Кнопки справа: начать и выйти -->
     <div class="nav-right">
       <RouterLink to="/register" class="btn-register">Начать</RouterLink>
       <button class="btn-logout" @click="logout">Выйти</button>
     </div>
   </header>
 
+  <!-- Здесь отображается текущая страница -->
   <main>
     <router-view />
   </main>
 
+  <!-- Подвал сайта -->
   <AppFooter />
 </template>
 
-<script>
-import AppFooter from './components/AppFooter.vue'
-</script>
-
 <style>
+/* Глобальные стили — применяются ко всему сайту */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -54,8 +59,9 @@ body {
 </style>
 
 <style scoped>
+/* Стили только для шапки */
 .header {
-  position: fixed;
+  position: fixed;       /* Прилипает к верху при скролле */
   top: 0;
   left: 0;
   right: 0;
@@ -64,9 +70,9 @@ body {
   padding: 0 48px;
   height: 68px;
   background: rgba(6, 8, 15, 0.9);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); /* Размытие фона под шапкой */
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  z-index: 200;
+  z-index: 200; /* Всегда поверх всего */
 }
 
 .logo {
@@ -81,6 +87,7 @@ body {
 .nav-links {
   display: flex;
   gap: 40px;
+  /* Центрируем навигацию абсолютно */
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -97,6 +104,7 @@ body {
   transition: color .25s;
 }
 
+/* Подсвечиваем активную ссылку */
 .nav-link:hover { color: #FFFFFF; }
 .nav-link.router-link-active { color: #FFFFFF; }
 

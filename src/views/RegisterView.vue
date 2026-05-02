@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// Данные формы — хранят то что вводит пользователь
 const form = reactive({
   name: '',
   login: '',
@@ -11,6 +12,7 @@ const form = reactive({
   gender: '',
 })
 
+// Ошибки — показываются под каждым полем
 const errors = reactive({
   name: '',
   login: '',
@@ -19,8 +21,11 @@ const errors = reactive({
 })
 
 const hasErrors = ref(false)
+
+// Текущий шаг регистрации (1 — данные, 2 — пол)
 const step = ref(1)
 
+// Проверяем поля первого шага
 function validateStep1() {
   hasErrors.value = false
   errors.name = ''
@@ -47,21 +52,26 @@ function validateStep1() {
   }
 }
 
+// Переход на шаг 2
 function nextStep() {
   validateStep1()
   if (hasErrors.value) return
   step.value = 2
 }
 
+// Финальная отправка формы
 function submit() {
+  // Проверяем что пол выбран
   if (!form.gender) {
     errors.gender = 'Выбери пол'
     return
   }
   errors.gender = ''
 
+  // Берём список пользователей из localStorage
   const users = JSON.parse(localStorage.getItem('users') || '[]')
 
+  // Проверяем не занят ли логин
   let exists = false
   for (let i = 0; i < users.length; i++) {
     if (users[i].login === form.login) {
@@ -76,6 +86,7 @@ function submit() {
     return
   }
 
+  // Создаём нового пользователя
   const newUser = {
     name: form.name,
     login: form.login,
@@ -83,20 +94,25 @@ function submit() {
     gender: form.gender,
   }
 
+  // Сохраняем пользователя в список
   users.push(newUser)
   localStorage.setItem('users', JSON.stringify(users))
+
+  // Запоминаем кто сейчас залогинен
   localStorage.setItem('currentUser', JSON.stringify(newUser))
 
+  // Переходим на анкету
   router.push('/survey')
 }
 </script>
 
 <template>
   <div class="page">
+    <!-- Светящийся фон -->
     <div class="glow"></div>
 
     <div class="box">
-
+      <!-- Кнопка назад на главную -->
       <RouterLink to="/" class="back-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="19" y1="12" x2="5" y2="12"/>
@@ -105,7 +121,7 @@ function submit() {
         На главную
       </RouterLink>
 
-      <!-- Прогресс -->
+      <!-- Полоска прогресса -->
       <div class="progress">
         <div class="progress-track">
           <div class="progress-fill" :style="{ width: step === 1 ? '50%' : '100%' }"></div>
@@ -114,12 +130,13 @@ function submit() {
       </div>
 
       <p class="page-label">Регистрация</p>
+      <!-- Заголовок меняется в зависимости от шага -->
       <h1 class="page-title">{{ step === 1 ? 'Создай аккаунт' : 'Твой пол' }}</h1>
       <p class="page-subtitle">
         {{ step === 1 ? 'Заполни данные для входа' : 'Это нужно для подбора программы' }}
       </p>
 
-      <!-- Шаг 1 — данные аккаунта -->
+      <!-- Шаг 1 — ввод логина, пароля, имени -->
       <div v-if="step === 1" class="step">
         <div class="field">
           <label>Имя</label>
@@ -171,9 +188,10 @@ function submit() {
         </p>
       </div>
 
-      <!-- Шаг 2 — пол -->
+      <!-- Шаг 2 — выбор пола -->
       <div v-if="step === 2" class="step">
         <div class="gender-grid">
+          <!-- Кнопка мужской — добавляет класс --active если выбрана -->
           <button
             type="button"
             :class="['gender-btn', { 'gender-btn--active': form.gender === 'male' }]"
@@ -187,6 +205,7 @@ function submit() {
             <span class="gender-label">Мужской</span>
           </button>
 
+          <!-- Кнопка женский -->
           <button
             type="button"
             :class="['gender-btn', { 'gender-btn--active': form.gender === 'female' }]"
@@ -211,6 +230,7 @@ function submit() {
           </svg>
         </button>
 
+        <!-- Кнопка вернуться на шаг 1 -->
         <button class="btn-back" @click="step = 1">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="19" y1="12" x2="5" y2="12"/>
@@ -225,6 +245,7 @@ function submit() {
 </template>
 
 <style scoped>
+/* Страница — тёмный фон, центрируем содержимое */
 .page {
   min-height: 100vh;
   background: #06080F;
@@ -237,6 +258,7 @@ function submit() {
   overflow: hidden;
 }
 
+/* Анимированный светящийся фон */
 .glow {
   position: absolute;
   inset: 0;
@@ -250,6 +272,7 @@ function submit() {
   50% { opacity: 0.6; }
 }
 
+/* Контейнер формы — появляется снизу вверх */
 .box {
   width: 100%;
   max-width: 460px;
@@ -279,10 +302,8 @@ function submit() {
 
 .back-link:hover { color: rgba(255,255,255,0.6); }
 
-/* Прогресс */
-.progress {
-  margin-bottom: 36px;
-}
+/* Полоска прогресса шагов */
+.progress { margin-bottom: 36px; }
 
 .progress-track {
   height: 1px;
@@ -292,6 +313,7 @@ function submit() {
   overflow: hidden;
 }
 
+/* Заполненная часть прогресса — ширина меняется через :style */
 .progress-fill {
   height: 100%;
   background: #FFFFFF;
@@ -332,6 +354,7 @@ function submit() {
   line-height: 1.7;
 }
 
+/* Каждый шаг анимируется при появлении */
 .step { animation: fadeUp 0.4s ease both; }
 
 .field { margin-bottom: 18px; }
@@ -361,16 +384,18 @@ input {
 }
 
 input::placeholder { color: rgba(255,255,255,0.18); }
+
 input:focus {
   outline: none;
   border-color: rgba(255,255,255,0.25);
   background: rgba(255,255,255,0.05);
 }
 
+/* Красная рамка при ошибке */
 .input--error { border-color: rgba(220,60,60,0.5) !important; }
 .field-error { font-size: 11px; color: #DC3C3C; margin-top: 6px; }
 
-/* Гендер */
+/* Сетка выбора пола — 2 большие кнопки */
 .gender-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -399,6 +424,7 @@ input:focus {
   background: rgba(255,255,255,0.05);
 }
 
+/* Активная кнопка пола — светлая рамка */
 .gender-btn--active {
   background: rgba(255,255,255,0.07);
   border-color: rgba(255,255,255,0.5);
@@ -413,7 +439,6 @@ input:focus {
   text-transform: uppercase;
 }
 
-/* Кнопки */
 .btn-submit {
   width: 100%;
   padding: 15px;
