@@ -4,33 +4,34 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// Данные формы — хранят то что вводит пользователь
+// Данные формы — добавили телефон, email, дату рождения
 const form = reactive({
   name: '',
   login: '',
   password: '',
+  phone: '',      // Обязательно
+  email: '',      // Не обязательно
+  birthdate: '',  // Дата рождения
   gender: '',
 })
 
-// Ошибки — показываются под каждым полем
 const errors = reactive({
   name: '',
   login: '',
   password: '',
+  phone: '',
   gender: '',
 })
 
 const hasErrors = ref(false)
-
-// Текущий шаг регистрации (1 — данные, 2 — пол)
 const step = ref(1)
 
-// Проверяем поля первого шага
 function validateStep1() {
   hasErrors.value = false
   errors.name = ''
   errors.login = ''
   errors.password = ''
+  errors.phone = ''
 
   if (!form.name) {
     errors.name = 'Имя обязательно'
@@ -50,28 +51,31 @@ function validateStep1() {
     errors.password = 'Пароль не короче 6 символов'
     hasErrors.value = true
   }
+  // Телефон обязателен — проверяем что только цифры и минимум 10 символов
+  if (!form.phone) {
+    errors.phone = 'Телефон обязателен'
+    hasErrors.value = true
+  } else if (form.phone.replace(/\D/g, '').length < 10) {
+    errors.phone = 'Введи корректный номер телефона'
+    hasErrors.value = true
+  }
 }
 
-// Переход на шаг 2
 function nextStep() {
   validateStep1()
   if (hasErrors.value) return
   step.value = 2
 }
 
-// Финальная отправка формы
 function submit() {
-  // Проверяем что пол выбран
   if (!form.gender) {
     errors.gender = 'Выбери пол'
     return
   }
   errors.gender = ''
 
-  // Берём список пользователей из localStorage
   const users = JSON.parse(localStorage.getItem('users') || '[]')
 
-  // Проверяем не занят ли логин
   let exists = false
   for (let i = 0; i < users.length; i++) {
     if (users[i].login === form.login) {
@@ -86,33 +90,30 @@ function submit() {
     return
   }
 
-  // Создаём нового пользователя
   const newUser = {
     name: form.name,
     login: form.login,
     password: form.password,
+    phone: form.phone,
+    email: form.email,
+    birthdate: form.birthdate,
     gender: form.gender,
+    avatar: '', // Аватарка — пока пустая, ставится в профиле
   }
 
-  // Сохраняем пользователя в список
   users.push(newUser)
   localStorage.setItem('users', JSON.stringify(users))
-
-  // Запоминаем кто сейчас залогинен
   localStorage.setItem('currentUser', JSON.stringify(newUser))
 
-  // Переходим на анкету
   router.push('/survey')
 }
 </script>
 
 <template>
   <div class="page">
-    <!-- Светящийся фон -->
     <div class="glow"></div>
 
     <div class="box">
-      <!-- Кнопка назад на главную -->
       <RouterLink to="/" class="back-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="19" y1="12" x2="5" y2="12"/>
@@ -121,7 +122,6 @@ function submit() {
         На главную
       </RouterLink>
 
-      <!-- Полоска прогресса -->
       <div class="progress">
         <div class="progress-track">
           <div class="progress-fill" :style="{ width: step === 1 ? '50%' : '100%' }"></div>
@@ -130,48 +130,48 @@ function submit() {
       </div>
 
       <p class="page-label">Регистрация</p>
-      <!-- Заголовок меняется в зависимости от шага -->
       <h1 class="page-title">{{ step === 1 ? 'Создай аккаунт' : 'Твой пол' }}</h1>
       <p class="page-subtitle">
         {{ step === 1 ? 'Заполни данные для входа' : 'Это нужно для подбора программы' }}
       </p>
 
-      <!-- Шаг 1 — ввод логина, пароля, имени -->
+      <!-- Шаг 1 -->
       <div v-if="step === 1" class="step">
         <div class="field">
           <label>Имя</label>
-          <input
-            type="text"
-            v-model="form.name"
-            @input="errors.name = ''"
-            placeholder="Как тебя зовут?"
-            :class="{ 'input--error': errors.name }"
-          />
+          <input type="text" v-model="form.name" @input="errors.name = ''" placeholder="Как тебя зовут?" :class="{ 'input--error': errors.name }" />
           <p v-if="errors.name" class="field-error">{{ errors.name }}</p>
         </div>
 
         <div class="field">
           <label>Логин</label>
-          <input
-            type="text"
-            v-model="form.login"
-            @input="errors.login = ''"
-            placeholder="Придумай логин"
-            :class="{ 'input--error': errors.login }"
-          />
+          <input type="text" v-model="form.login" @input="errors.login = ''" placeholder="Придумай логин" :class="{ 'input--error': errors.login }" />
           <p v-if="errors.login" class="field-error">{{ errors.login }}</p>
         </div>
 
         <div class="field">
           <label>Пароль</label>
-          <input
-            type="password"
-            v-model="form.password"
-            @input="errors.password = ''"
-            placeholder="Минимум 6 символов"
-            :class="{ 'input--error': errors.password }"
-          />
+          <input type="password" v-model="form.password" @input="errors.password = ''" placeholder="Минимум 6 символов" :class="{ 'input--error': errors.password }" />
           <p v-if="errors.password" class="field-error">{{ errors.password }}</p>
+        </div>
+
+        <!-- Телефон — обязательный -->
+        <div class="field">
+          <label>Телефон *</label>
+          <input type="tel" v-model="form.phone" @input="errors.phone = ''" placeholder="+7 (999) 999-99-99" :class="{ 'input--error': errors.phone }" />
+          <p v-if="errors.phone" class="field-error">{{ errors.phone }}</p>
+        </div>
+
+        <!-- Email — необязательный -->
+        <div class="field">
+          <label>Email <span class="optional">— необязательно</span></label>
+          <input type="email" v-model="form.email" placeholder="your@email.com" />
+        </div>
+
+        <!-- Дата рождения -->
+        <div class="field">
+          <label>Дата рождения <span class="optional">— необязательно</span></label>
+          <input type="date" v-model="form.birthdate" />
         </div>
 
         <button class="btn-submit" @click="nextStep">
@@ -188,15 +188,10 @@ function submit() {
         </p>
       </div>
 
-      <!-- Шаг 2 — выбор пола -->
+      <!-- Шаг 2 — пол -->
       <div v-if="step === 2" class="step">
         <div class="gender-grid">
-          <!-- Кнопка мужской — добавляет класс --active если выбрана -->
-          <button
-            type="button"
-            :class="['gender-btn', { 'gender-btn--active': form.gender === 'male' }]"
-            @click="form.gender = 'male'"
-          >
+          <button type="button" :class="['gender-btn', { 'gender-btn--active': form.gender === 'male' }]" @click="form.gender = 'male'">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
               <circle cx="10" cy="14" r="5"/>
               <line x1="19" y1="5" x2="14.14" y2="9.86"/>
@@ -205,12 +200,7 @@ function submit() {
             <span class="gender-label">Мужской</span>
           </button>
 
-          <!-- Кнопка женский -->
-          <button
-            type="button"
-            :class="['gender-btn', { 'gender-btn--active': form.gender === 'female' }]"
-            @click="form.gender = 'female'"
-          >
+          <button type="button" :class="['gender-btn', { 'gender-btn--active': form.gender === 'female' }]" @click="form.gender = 'female'">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
               <circle cx="12" cy="8" r="5"/>
               <line x1="12" y1="13" x2="12" y2="21"/>
@@ -230,7 +220,6 @@ function submit() {
           </svg>
         </button>
 
-        <!-- Кнопка вернуться на шаг 1 -->
         <button class="btn-back" @click="step = 1">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="19" y1="12" x2="5" y2="12"/>
@@ -239,13 +228,11 @@ function submit() {
           Назад
         </button>
       </div>
-
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Страница — тёмный фон, центрируем содержимое */
 .page {
   min-height: 100vh;
   background: #06080F;
@@ -258,7 +245,6 @@ function submit() {
   overflow: hidden;
 }
 
-/* Анимированный светящийся фон */
 .glow {
   position: absolute;
   inset: 0;
@@ -272,7 +258,6 @@ function submit() {
   50% { opacity: 0.6; }
 }
 
-/* Контейнер формы — появляется снизу вверх */
 .box {
   width: 100%;
   max-width: 460px;
@@ -302,18 +287,15 @@ function submit() {
 
 .back-link:hover { color: rgba(255,255,255,0.6); }
 
-/* Полоска прогресса шагов */
 .progress { margin-bottom: 36px; }
 
 .progress-track {
   height: 1px;
   background: rgba(255,255,255,0.08);
   margin-bottom: 10px;
-  border-radius: 1px;
   overflow: hidden;
 }
 
-/* Заполненная часть прогресса — ширина меняется через :style */
 .progress-fill {
   height: 100%;
   background: #FFFFFF;
@@ -354,7 +336,6 @@ function submit() {
   line-height: 1.7;
 }
 
-/* Каждый шаг анимируется при появлении */
 .step { animation: fadeUp 0.4s ease both; }
 
 .field { margin-bottom: 18px; }
@@ -367,6 +348,14 @@ label {
   text-transform: uppercase;
   color: rgba(255,255,255,0.3);
   margin-bottom: 8px;
+}
+
+/* Пометка "необязательно" рядом с лейблом */
+.optional {
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: none;
+  color: rgba(255,255,255,0.2);
 }
 
 input {
@@ -391,11 +380,15 @@ input:focus {
   background: rgba(255,255,255,0.05);
 }
 
-/* Красная рамка при ошибке */
+/* Стиль для поля выбора даты */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
 .input--error { border-color: rgba(220,60,60,0.5) !important; }
 .field-error { font-size: 11px; color: #DC3C3C; margin-top: 6px; }
 
-/* Сетка выбора пола — 2 большие кнопки */
 .gender-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -424,7 +417,6 @@ input:focus {
   background: rgba(255,255,255,0.05);
 }
 
-/* Активная кнопка пола — светлая рамка */
 .gender-btn--active {
   background: rgba(255,255,255,0.07);
   border-color: rgba(255,255,255,0.5);
@@ -432,7 +424,6 @@ input:focus {
 }
 
 .gender-label {
-  font-family: 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.15em;
