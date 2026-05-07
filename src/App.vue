@@ -66,9 +66,13 @@ function logout() {
     </div>
   </header>
 
-  <main>
-    <router-view />
-  </main>
+<main>
+  <RouterView v-slot="{ Component }">
+    <Transition name="fade" mode="out-in">
+      <component :is="Component" :key="$route.path" />
+    </Transition>
+  </RouterView>
+</main>
 
   <AppFooter />
 </template>
@@ -77,6 +81,21 @@ function logout() {
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; background: #06080F; color: #FFFFFF; }
+/* Анимация перехода между страницами */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
 </style>
 
 <style scoped>
