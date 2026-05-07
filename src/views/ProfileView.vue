@@ -7,6 +7,29 @@ const router = useRouter()
 // Данные пользователя из localStorage
 const user = ref(null)
 
+// Данные подписки
+const subscription = ref(null)
+
+// Считаем сколько дней осталось
+function getDaysLeft() {
+  if (!subscription.value) return 0
+  const expiry = new Date(subscription.value.expiryDate)
+  const now = new Date()
+  const diff = expiry - now
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
+
+// Форматируем дату истечения
+function formatExpiryDate() {
+  if (!subscription.value) return '—'
+  const date = new Date(subscription.value.expiryDate)
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
 // Режим редактирования — false = просмотр, true = редактирование
 const isEditing = ref(false)
 
@@ -56,6 +79,12 @@ const avatarPreview = ref('')
 
 onMounted(function() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null')
+
+  // Загружаем подписку
+const savedSub = localStorage.getItem('subscription')
+if (savedSub) {
+  subscription.value = JSON.parse(savedSub)
+}
 
   // Если пользователь не залогинен — отправляем на логин
   if (!currentUser) {
@@ -361,6 +390,39 @@ function getBMIPointerPosition() {
   return Math.round(pos)
 }
 
+// Прогресс подписки в %
+function getSubProgress() {
+  if (!subscription.value) return 0
+  const start = new Date(subscription.value.startDate)
+  const expiry = new Date(subscription.value.expiryDate)
+  const now = new Date()
+  const total = expiry - start
+  const passed = now - start
+  const progress = (passed / total) * 100
+  if (progress < 0) return 0
+  if (progress > 100) return 100
+  return Math.round(progress)
+}
+
+// Отмена подписки
+function cancelSubscription() {
+  subscription.value = null
+  localStorage.removeItem('subscription')
+
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  currentUser.subscription = null
+  localStorage.setItem('currentUser', JSON.stringify(currentUser))
+
+  const users = JSON.parse(localStorage.getItem('users') || '[]')
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].login === currentUser.login) {
+      users[i] = currentUser
+      break
+    }
+  }
+  localStorage.setItem('users', JSON.stringify(users))
+}
+
 </script>
 
 <template>
@@ -446,6 +508,71 @@ function getBMIPointerPosition() {
 
       <!-- Секции данных -->
       <div class="sections">
+
+        <!-- Статус подписки -->
+      <div class="section">
+        <p class="section-title">Подписка</p>
+
+        <!-- Если подписка активна -->
+        <div v-if="subscription && subscription.active" class="sub-content">
+          <div class="sub-status">
+            <div class="sub-active-dot"></div>
+            <p class="sub-active-text">Активна</p>
+          </div>
+
+          <div class="sub-info-grid">
+            <div class="sub-info-item">
+              <p class="sub-info-label">Тариф</p>
+              <p class="sub-info-value">FITNESS Premium</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Стоимость</p>
+              <p class="sub-info-value">790 ₽ / месяц</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Действует до</p>
+              <p class="sub-info-value">{{ formatExpiryDate() }}</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Осталось дней</p>
+              <p class="sub-info-value" :class="{ 'sub-days--warning': getDaysLeft() <= 5 }">
+                {{ getDaysLeft() }} дн.
+              </p>
+            </div>
+          </div>
+
+          <!-- Прогресс-бар срока подписки -->
+          <div class="sub-progress">
+            <div class="sub-progress-track">
+              <div
+                class="sub-progress-fill"
+                :style="{ width: getSubProgress() + '%' }"
+              ></div>
+            </div>
+            <div class="sub-progress-labels">
+              <span>Начало</span>
+              <span>{{ getDaysLeft() }} дн. осталось</span>
+              <span>Конец</span>
+            </div>
+          </div>
+
+          <button class="btn-cancel-sub" @click="cancelSubscription">
+            Отменить подписку
+          </button>
+        </div>
+
+        <!-- Если подписки нет -->
+        <div v-else class="sub-empty">
+          <p class="sub-empty-text">У тебя нет активной подписки</p>
+          <RouterLink to="/pay" class="btn-subscribe">
+            Оформить за 790 ₽/мес
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </RouterLink>
+        </div>
+      </div>
 
         <!-- Личные данные -->
         <div class="section">
@@ -1515,5 +1642,149 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cur
   color: #FFFFFF;
   font-weight: 600;
 }
+
+/* Подписка */
+.sub-content {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sub-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Зелёная мигающая точка */
+.sub-active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50;
+  box-shadow: 0 0 8px rgba(76,175,80,0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(76,175,80,0.4); }
+  50% { box-shadow: 0 0 12px rgba(76,175,80,0.8); }
+}
+
+.sub-active-text {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4CAF50;
+}
+
+.sub-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.sub-info-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 2px;
+  padding: 14px 16px;
+}
+
+.sub-info-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 6px;
+}
+
+.sub-info-value {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Красный если мало дней */
+.sub-days--warning { color: #FF9800 !important; }
+
+/* Прогресс-бар */
+.sub-progress { display: flex; flex-direction: column; gap: 8px; }
+
+.sub-progress-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sub-progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+.sub-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.05em;
+}
+
+.btn-cancel-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  color: rgba(220,60,60,0.5);
+  cursor: pointer;
+  padding: 0;
+  width: fit-content;
+  transition: color .2s;
+}
+
+.btn-cancel-sub:hover { color: #DC3C3C; }
+
+/* Нет подписки */
+.sub-empty {
+  padding: 32px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sub-empty-text {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.3);
+}
+
+.btn-subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #FFFFFF;
+  color: #06080F;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: opacity .2s;
+}
+
+.btn-subscribe:hover { opacity: 0.85; }
 
 </style>
