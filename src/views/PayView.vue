@@ -793,4 +793,30 @@ input:focus {
   border-color: rgba(255,255,255,0.3);
   color: rgba(255,255,255,0.8);
 }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  text-decoration: none;
+  margin-bottom: 36px;
+  transition: color .2s;
+}
+
+.back-link:hover { color: rgba(255,255,255,0.6); }
+
+.page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+  margin-bottom: 28px;
+  line-height: 1;
+}
+
 </style>
