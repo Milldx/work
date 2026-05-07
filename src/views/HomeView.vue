@@ -7,29 +7,33 @@ const selectedPlan = ref('')
 
 const plans = [
   {
-    id: 'base',
-    name: 'Base',
-    price: '490',
-    features: ['Личная программа', 'База упражнений', 'Гид по питанию'],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: '890',
-    features: ['Всё из Base', 'Программа обновляется каждый месяц', 'Расширенный гид по спортпиту'],
-  },
-  {
-    id: 'elite',
-    name: 'Elite',
-    price: '1490',
-    features: ['Всё из Pro', 'Индивидуальные рекомендации', 'Приоритетная поддержка'],
+    id: 'premium',
+    name: 'FITNESS Premium',
+    price: '790',
+    period: 'месяц',
+    features: [
+      'Личная программа тренировок',
+      'База упражнений',
+      'Персональный план питания',
+      'Расширенный гид по спортпиту',
+      'Калькулятор ИМТ',
+      'История замеров',
+    ],
   },
 ]
 
 function choosePlan(planId) {
   selectedPlan.value = planId
   localStorage.setItem('selectedPlan', planId)
-  router.push('/register')
+
+  // Если залогинен — сразу на оплату
+  const currentUser = localStorage.getItem('currentUser')
+  if (currentUser) {
+    router.push('/pay')
+  } else {
+    // Если нет — сначала регистрация
+    router.push('/register')
+  }
 }
 
 // Анимация при скролле для обычных блоков
@@ -240,41 +244,47 @@ onMounted(function() {
   </div>
 </section>
 
-    <!-- Подписка -->
-    <section class="plans">
-      <div class="plans-header animate-on-scroll">
-        <p class="plans-label">Подписка</p>
-        <h2 class="plans-title">Выбери свой план</h2>
-        <p class="plans-subtitle">Ежемесячная оплата. Отмена в любое время.</p>
+  <!-- Подписка -->
+  <section class="plans">
+    <div class="plans-header animate-on-scroll">
+      <p class="plans-label">Подписка</p>
+      <h2 class="plans-title">Один план — всё включено</h2>
+      <p class="plans-subtitle">Ежемесячная оплата. Отмена в любое время.</p>
+    </div>
+
+    <div class="plan-single animate-on-scroll">
+      <div class="plan-single-left">
+        <p class="plan-name">FITNESS Premium</p>
+        <div class="plan-price-wrap">
+          <span class="plan-amount">790</span>
+          <span class="plan-currency">₽ / мес</span>
+        </div>
+        <ul class="plan-features">
+          <li v-for="feature in plans[0].features" :key="feature" class="plan-feature">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ feature }}
+          </li>
+        </ul>
       </div>
 
-      <div class="plans-grid">
-        <div
-          v-for="(plan, index) in plans"
-          :key="plan.id"
-          :class="['plan-card animate-on-scroll', { 'plan-card--active': selectedPlan === plan.id }]"
-          :style="{ transitionDelay: (index * 0.1) + 's' }"
-          @click="selectedPlan = plan.id"
-        >
-          <p class="plan-name">{{ plan.name }}</p>
-          <div class="plan-price">
-            <span class="plan-amount">{{ plan.price }}</span>
-            <span class="plan-currency">₽ / мес</span>
-          </div>
-          <ul class="plan-features">
-            <li v-for="feature in plan.features" :key="feature" class="plan-feature">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              {{ feature }}
-            </li>
-          </ul>
-          <button class="plan-btn" @click.stop="choosePlan(plan.id)">
-            Выбрать {{ plan.name }}
-          </button>
-        </div>
+      <div class="plan-single-right">
+        <p class="plan-single-desc">
+          Полный доступ ко всем функциям приложения.<br/>
+          Персональная программа под твои цели.
+        </p>
+        <button class="plan-btn" @click="choosePlan('premium')">
+          Оформить за 790 ₽/мес
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+        <p class="plan-note">Отмена в любое время</p>
       </div>
-    </section>
+    </div>
+  </section>
 
   </div>
 </template>
@@ -420,68 +430,38 @@ onMounted(function() {
   line-height: 1.8;
 }
 
-/* Plans */
-.plans {
-  padding: 100px 80px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-.plans-header { margin-bottom: 56px; }
-
-.plans-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: 16px;
-}
-
-.plans-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 56px;
-  color: #FFFFFF;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
-}
-
-.plans-subtitle {
-  font-size: 13px;
-  font-weight: 300;
-  color: rgba(255,255,255,0.35);
-}
-
-.plans-grid {
+/* Один план */
+.plan-single {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.06);
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 4px;
   overflow: hidden;
 }
 
-.plan-card {
-  background: #06080F;
-  padding: 44px 36px;
-  cursor: pointer;
-  transition: background .25s, opacity 0.7s ease, transform 0.7s ease;
+.plan-single-left {
+  padding: 48px 48px;
+  border-right: 1px solid rgba(255,255,255,0.06);
 }
 
-.plan-card:hover { background: #0A0D1A; }
-.plan-card--active { background: #0D1228; outline: 1px solid rgba(255,255,255,0.2); }
+.plan-single-right {
+  padding: 48px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  background: rgba(255,255,255,0.02);
+}
 
 .plan-name {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 28px;
   letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.5);
   margin-bottom: 16px;
 }
 
-.plan-card--active .plan-name { color: #FFFFFF; }
-
-.plan-price {
+.plan-price-wrap {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -490,8 +470,9 @@ onMounted(function() {
 
 .plan-amount {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 52px;
+  font-size: 72px;
   color: #FFFFFF;
+  letter-spacing: 0.02em;
 }
 
 .plan-currency {
@@ -503,7 +484,7 @@ onMounted(function() {
 .plan-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 36px;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -515,7 +496,7 @@ onMounted(function() {
   gap: 10px;
   font-size: 13px;
   font-weight: 300;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.5);
   line-height: 1.5;
 }
 
@@ -525,34 +506,39 @@ onMounted(function() {
   color: rgba(255,255,255,0.35);
 }
 
-.plan-card--active .plan-feature { color: rgba(255,255,255,0.7); }
+.plan-single-desc {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.8;
+}
 
 .plan-btn {
-  width: 100%;
-  padding: 13px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.45);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  background: #FFFFFF;
+  color: #06080F;
+  border: none;
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   cursor: pointer;
   border-radius: 2px;
-  transition: all .2s;
+  transition: opacity .2s;
+  width: fit-content;
 }
 
-.plan-btn:hover {
-  background: rgba(255,255,255,0.1);
-  color: #FFFFFF;
-  border-color: rgba(255,255,255,0.3);
-}
+.plan-btn:hover { opacity: 0.85; }
 
-.plan-card--active .plan-btn {
-  background: #FFFFFF;
-  color: #06080F;
-  border-color: #FFFFFF;
+.plan-note {
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.05em;
 }
 
 .stats {
