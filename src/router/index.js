@@ -9,6 +9,7 @@ import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import PayView from '../views/PayView.vue'
+import SupplementsView from '../views/SupplementsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/workout',   component: WorkoutView },
     { path: '/nutrition', component: NutritionView },
     { path: '/pay', component: PayView },
+    { path: '/supplements', component: SupplementsView },
 
     // Защищённые маршруты — только для залогиненных
     { path: '/program',   component: ProgramView,  meta: { requiresAuth: true } },
