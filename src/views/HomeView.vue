@@ -732,4 +732,38 @@ onMounted(function() {
 .hero-line--dim {
   opacity: 0.2;
 }
+
+/* Подписка */
+.plans {
+  padding: 100px 80px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.plans-header {
+  margin-bottom: 56px;
+}
+
+.plans-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 16px;
+}
+
+.plans-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.plans-subtitle {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+}
+
 </style>
