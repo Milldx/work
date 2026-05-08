@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import SurveyView from '../views/SurveyView.vue'
 import WorkoutView from '../views/WorkoutView.vue'
+import ExerciseView from '../views/ExerciseView.vue'
 import NutritionView from '../views/NutritionView.vue'
 import ProgramView from '../views/ProgramView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -19,6 +20,7 @@ const router = createRouter({
     { path: '/survey',    component: SurveyView },
     { path: '/login',     component: LoginView },
     { path: '/workout',   component: WorkoutView },
+    { path: '/exercise/:id',   component: ExerciseView },
     { path: '/nutrition', component: NutritionView },
     { path: '/pay', component: PayView },
     { path: '/supplements', component: SupplementsView },
