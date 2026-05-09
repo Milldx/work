@@ -13,6 +13,7 @@
             <p class="footer-col-title">Разделы</p>
             <RouterLink to="/workout" class="footer-link">Тренировки</RouterLink>
             <RouterLink to="/nutrition" class="footer-link">Питание</RouterLink>
+            <RouterLink to="/supplements" class="footer-link">Спортпит</RouterLink>
             <RouterLink to="/program" class="footer-link">Моя программа</RouterLink>
           </div>
           <div class="footer-col">
