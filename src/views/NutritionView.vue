@@ -1,9 +1,5 @@
 <template>
-
-  <h1>Страница</h1>
-</template>
-
-  <div class="nutrition-view">
+ <div class="nutrition-view">
     <div class="hero-section">
       <h1 class="page-title">ПИТАНИЕ</h1>
       <p class="subtitle">КОНТРОЛИРУЙ СВОЙ РАЦИОН</p>
