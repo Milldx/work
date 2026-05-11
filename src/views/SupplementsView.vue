@@ -237,6 +237,7 @@ export default {
   letter-spacing: 0.05em;
   color: #FFFFFF;
   margin-bottom: 12px;
+  margin-top: 80px;
 }
 
 .subtitle {
