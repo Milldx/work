@@ -1,5 +1,6 @@
 <template>
 
+
   <header class="header">
     <RouterLink to="/" class="logo">FITNESS</RouterLink>
 
@@ -61,20 +62,33 @@
           </svg>
           <h2 class="logo">NUTRIPRO</h2>
         </div>
+
+  <div id="app">
+    <nav class="navbar">
+      <div class="nav-container">
+        <h2 class="logo">NUTRIPRO</h2>
+
       </div>
     </nav>
     
     <main>
+
+
+      <!-- Секция ПИТАНИЕ - на первом месте -->
+
       <section id="nutrition" class="section">
         <NutritionView />
       </section>
-      
+
+      <!-- Секция СПОРТИВНОЕ ПИТАНИЕ - внизу -->
+
       <section id="supplements" class="section">
         <SupplementsView />
       </section>
     </main>
     
     <footer class="footer">
+
       <div class="footer-content">
         <div class="footer-icons">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -96,6 +110,14 @@
     </footer>
   </div>
 
+
+
+      <p>© 2024 NUTRIPRO — ТВОЙ ПЕРСОНАЛЬНЫЙ ТРЕКЕР</p>
+  </footer>
+  </div>
+
+
+
 </template>
 
 <script>
@@ -112,6 +134,7 @@ export default {
 </script>
 
 <style>
+
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -146,10 +169,20 @@ body { font-family: 'Inter', sans-serif; background: #06080F; color: #FFFFFF; }
   border-bottom: 1px solid rgba(255,255,255,0.05);
   z-index: 200;
 
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+
+
+
+
+}
+
+html {
+  scroll-behavior: smooth;
+
 
 }
 
@@ -183,6 +216,7 @@ body {
   align-items: center;
 }
 
+
 .logo-section {
   display: flex;
   align-items: center;
@@ -192,6 +226,7 @@ body {
 .logo-icon {
   color: #FFC107;
 }
+
 
 .logo {
   font-family: 'Bebas Neue', sans-serif;
@@ -218,6 +253,7 @@ main {
   border-top: 1px solid rgba(255,255,255,0.07);
   text-align: center;
   padding: 24px;
+
 }
 
 .footer-content {
@@ -242,6 +278,7 @@ main {
 }
 
 .footer p {
+
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   letter-spacing: 0.18em;
