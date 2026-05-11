@@ -7,6 +7,29 @@ const router = useRouter()
 // Данные пользователя из localStorage
 const user = ref(null)
 
+// Данные подписки
+const subscription = ref(null)
+
+// Считаем сколько дней осталось
+function getDaysLeft() {
+  if (!subscription.value) return 0
+  const expiry = new Date(subscription.value.expiryDate)
+  const now = new Date()
+  const diff = expiry - now
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+}
+
+// Форматируем дату истечения
+function formatExpiryDate() {
+  if (!subscription.value) return '—'
+  const date = new Date(subscription.value.expiryDate)
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
 // Режим редактирования — false = просмотр, true = редактирование
 const isEditing = ref(false)
 
@@ -54,9 +77,14 @@ const newMeasure = reactive({
 // Аватарка — хранится как base64 строка
 const avatarPreview = ref('')
 
-// При загрузке страницы берём данные из localStorage
 onMounted(function() {
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null')
+
+  // Загружаем подписку
+const savedSub = localStorage.getItem('subscription')
+if (savedSub) {
+  subscription.value = JSON.parse(savedSub)
+}
 
   // Если пользователь не залогинен — отправляем на логин
   if (!currentUser) {
@@ -80,6 +108,15 @@ onMounted(function() {
   form.bicep     = currentUser.bicep     || ''
   form.hip       = currentUser.hip       || ''
   avatarPreview.value = currentUser.avatar || ''
+
+  // Загружаем историю замеров из localStorage
+  const savedMeasures = localStorage.getItem('measures_' + currentUser.login)
+  if (savedMeasures) {
+    measures.value = JSON.parse(savedMeasures)
+  }
+
+  // Считаем ИМТ ПОСЛЕ загрузки данных
+  calculateBMI()
 })
 
 // Обработка загрузки аватарки
@@ -281,6 +318,111 @@ function getDiffClass(current, previous, type) {
   return diff > 0 ? 'measure-diff--good' : 'measure-diff--bad'
 }
 
+// ИМТ = вес / (рост в метрах)²
+const bmi = ref(null)
+const bmiCategory = ref('')
+const bmiColor = ref('')
+
+function calculateBMI() {
+  // Берём рост и вес из формы или из данных пользователя
+  const weight = parseFloat(form.weight || user.value.weight)
+  const height = parseFloat(form.height || user.value.height)
+
+  // Проверяем что данные введены
+  if (!weight || !height) {
+    bmi.value = null
+    bmiCategory.value = 'Укажи рост и вес в параметрах тела'
+    bmiColor.value = 'rgba(255,255,255,0.25)'
+    return
+  }
+
+  // Считаем ИМТ
+  const heightInMeters = height / 100
+  const result = weight / (heightInMeters * heightInMeters)
+  bmi.value = result.toFixed(1)
+
+  // Определяем категорию
+  if (result < 16) {
+    bmiCategory.value = 'Выраженный дефицит массы'
+    bmiColor.value = '#F44336'
+  } else if (result < 18.5) {
+    bmiCategory.value = 'Дефицит массы тела'
+    bmiColor.value = '#FF9800'
+  } else if (result < 25) {
+    bmiCategory.value = 'Норма'
+    bmiColor.value = '#4CAF50'
+  } else if (result < 30) {
+    bmiCategory.value = 'Избыточный вес'
+    bmiColor.value = '#FF9800'
+  } else if (result < 35) {
+    bmiCategory.value = 'Ожирение I степени'
+    bmiColor.value = '#F44336'
+  } else if (result < 40) {
+    bmiCategory.value = 'Ожирение II степени'
+    bmiColor.value = '#D32F2F'
+  } else {
+    bmiCategory.value = 'Ожирение III степени'
+    bmiColor.value = '#B71C1C'
+  }
+}
+
+// Таблица категорий ИМТ
+const bmiCategories = [
+  { range: '< 16',     label: 'Выраженный дефицит массы', color: '#F44336' },
+  { range: '16 — 18.5', label: 'Дефицит массы тела',      color: '#FF9800' },
+  { range: '18.5 — 25', label: 'Норма',                    color: '#4CAF50' },
+  { range: '25 — 30',   label: 'Избыточный вес',           color: '#FF9800' },
+  { range: '30 — 35',   label: 'Ожирение I степени',       color: '#F44336' },
+  { range: '35 — 40',   label: 'Ожирение II степени',      color: '#D32F2F' },
+  { range: '> 40',      label: 'Ожирение III степени',     color: '#B71C1C' },
+]
+
+// Считаем позицию указателя на шкале (от 0 до 100%)
+function getBMIPointerPosition() {
+  const value = parseFloat(bmi.value)
+  // Шкала от 14 до 44
+  const min = 14
+  const max = 44
+  const pos = ((value - min) / (max - min)) * 100
+  // Ограничиваем от 2 до 98
+  if (pos < 2) return 2
+  if (pos > 98) return 98
+  return Math.round(pos)
+}
+
+// Прогресс подписки в %
+function getSubProgress() {
+  if (!subscription.value) return 0
+  const start = new Date(subscription.value.startDate)
+  const expiry = new Date(subscription.value.expiryDate)
+  const now = new Date()
+  const total = expiry - start
+  const passed = now - start
+  const progress = (passed / total) * 100
+  if (progress < 0) return 0
+  if (progress > 100) return 100
+  return Math.round(progress)
+}
+
+// Отмена подписки
+function cancelSubscription() {
+  subscription.value = null
+  localStorage.removeItem('subscription')
+
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  currentUser.subscription = null
+  localStorage.setItem('currentUser', JSON.stringify(currentUser))
+
+  const users = JSON.parse(localStorage.getItem('users') || '[]')
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].login === currentUser.login) {
+      users[i] = currentUser
+      break
+    }
+  }
+  localStorage.setItem('users', JSON.stringify(users))
+}
+
 </script>
 
 <template>
@@ -366,6 +508,71 @@ function getDiffClass(current, previous, type) {
 
       <!-- Секции данных -->
       <div class="sections">
+
+        <!-- Статус подписки -->
+      <div class="section">
+        <p class="section-title">Подписка</p>
+
+        <!-- Если подписка активна -->
+        <div v-if="subscription && subscription.active" class="sub-content">
+          <div class="sub-status">
+            <div class="sub-active-dot"></div>
+            <p class="sub-active-text">Активна</p>
+          </div>
+
+          <div class="sub-info-grid">
+            <div class="sub-info-item">
+              <p class="sub-info-label">Тариф</p>
+              <p class="sub-info-value">FITNESS Premium</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Стоимость</p>
+              <p class="sub-info-value">790 ₽ / месяц</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Действует до</p>
+              <p class="sub-info-value">{{ formatExpiryDate() }}</p>
+            </div>
+            <div class="sub-info-item">
+              <p class="sub-info-label">Осталось дней</p>
+              <p class="sub-info-value" :class="{ 'sub-days--warning': getDaysLeft() <= 5 }">
+                {{ getDaysLeft() }} дн.
+              </p>
+            </div>
+          </div>
+
+          <!-- Прогресс-бар срока подписки -->
+          <div class="sub-progress">
+            <div class="sub-progress-track">
+              <div
+                class="sub-progress-fill"
+                :style="{ width: getSubProgress() + '%' }"
+              ></div>
+            </div>
+            <div class="sub-progress-labels">
+              <span>Начало</span>
+              <span>{{ getDaysLeft() }} дн. осталось</span>
+              <span>Конец</span>
+            </div>
+          </div>
+
+          <button class="btn-cancel-sub" @click="cancelSubscription">
+            Отменить подписку
+          </button>
+        </div>
+
+        <!-- Если подписки нет -->
+        <div v-else class="sub-empty">
+          <p class="sub-empty-text">У тебя нет активной подписки</p>
+          <RouterLink to="/pay" class="btn-subscribe">
+            Оформить за 790 ₽/мес
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </RouterLink>
+        </div>
+      </div>
 
         <!-- Личные данные -->
         <div class="section">
@@ -495,6 +702,88 @@ function getDiffClass(current, previous, type) {
               </div>
               <p v-else class="field-value">{{ user.hip ? user.hip + ' см' : '—' }}</p>
             </div>
+          </div>
+        </div>
+
+                <!-- Калькулятор ИМТ -->
+        <div class="section">
+          <div class="section-head">
+            <p class="section-title">Индекс массы тела (ИМТ)</p>
+          </div>
+
+          <div class="bmi-content">
+
+            <!-- Результат ИМТ -->
+            <div class="bmi-result">
+              <div class="bmi-number-wrap">
+                <p class="bmi-number" :style="{ color: bmiColor }">
+                  {{ bmi || '—' }}
+                </p>
+                <p class="bmi-unit">кг/м²</p>
+              </div>
+              <div class="bmi-info">
+                <p class="bmi-category" :style="{ color: bmiColor }">
+                  {{ bmiCategory || 'Заполни рост и вес' }}
+                </p>
+                <p class="bmi-desc">
+                  Индекс массы тела показывает соотношение веса и роста.
+                  Норма — от 18.5 до 24.9
+                </p>
+                <!-- Кнопка пересчитать -->
+                <button class="btn-calc" @click="calculateBMI">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                  Пересчитать
+                </button>
+              </div>
+            </div>
+
+            <!-- Шкала ИМТ -->
+            <div class="bmi-scale">
+              <div class="bmi-scale-track">
+                <!-- Цветные сегменты шкалы -->
+                <div class="bmi-segment" style="background: #2196F3; flex: 2"></div>
+                <div class="bmi-segment" style="background: #03A9F4; flex: 1.5"></div>
+                <div class="bmi-segment" style="background: #4CAF50; flex: 3.25"></div>
+                <div class="bmi-segment" style="background: #FF9800; flex: 2.5"></div>
+                <div class="bmi-segment" style="background: #F44336; flex: 2.5"></div>
+                <div class="bmi-segment" style="background: #D32F2F; flex: 2.5"></div>
+                <div class="bmi-segment" style="background: #B71C1C; flex: 2"></div>
+
+                <!-- Указатель текущего ИМТ -->
+                <div
+                  v-if="bmi"
+                  class="bmi-pointer"
+                  :style="{ left: getBMIPointerPosition() + '%' }"
+                ></div>
+              </div>
+
+              <!-- Подписи шкалы -->
+              <div class="bmi-scale-labels">
+                <span>16</span>
+                <span>18.5</span>
+                <span>25</span>
+                <span>30</span>
+                <span>35</span>
+                <span>40</span>
+              </div>
+            </div>
+
+            <!-- Таблица категорий -->
+            <div class="bmi-table">
+              <div
+                v-for="cat in bmiCategories"
+                :key="cat.label"
+                :class="['bmi-table-row', { 'bmi-table-row--active': bmiCategory === cat.label }]"
+              >
+                <div class="bmi-table-dot" :style="{ background: cat.color }"></div>
+                <p class="bmi-table-range">{{ cat.range }}</p>
+                <p class="bmi-table-label">{{ cat.label }}</p>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -1165,5 +1454,337 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.4); cur
 }
 
 .btn-delete-measure:hover { color: #F44336; }
+
+/* Калькулятор ИМТ */
+.bmi-content {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Результат */
+.bmi-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.bmi-number-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  padding: 20px 28px;
+  min-width: 120px;
+}
+
+.bmi-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  transition: color .3s;
+}
+
+.bmi-unit {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-top: 4px;
+}
+
+.bmi-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.bmi-category {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: color .3s;
+}
+
+.bmi-desc {
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.3);
+  line-height: 1.7;
+}
+
+.btn-calc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.4);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all .2s;
+  width: fit-content;
+}
+
+.btn-calc:hover {
+  background: rgba(255,255,255,0.08);
+  color: #FFFFFF;
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* Шкала */
+.bmi-scale { display: flex; flex-direction: column; gap: 8px; }
+
+.bmi-scale-track {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: visible;
+  position: relative;
+  gap: 2px;
+}
+
+.bmi-segment {
+  height: 100%;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+/* Указатель на шкале */
+.bmi-pointer {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  border: 2px solid #06080F;
+  box-shadow: 0 0 8px rgba(255,255,255,0.5);
+  transition: left .4s ease;
+  z-index: 2;
+}
+
+.bmi-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.bmi-scale-labels span {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.05em;
+}
+
+/* Таблица категорий */
+.bmi-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bmi-table-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.02);
+  transition: background .2s;
+}
+
+/* Подсвечиваем текущую категорию */
+.bmi-table-row--active {
+  background: rgba(255,255,255,0.06);
+  border-left: 2px solid rgba(255,255,255,0.4);
+}
+
+.bmi-table-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bmi-table-range {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.3);
+  min-width: 90px;
+  letter-spacing: 0.05em;
+}
+
+.bmi-table-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.5);
+}
+
+.bmi-table-row--active .bmi-table-label {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Подписка */
+.sub-content {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sub-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Зелёная мигающая точка */
+.sub-active-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50;
+  box-shadow: 0 0 8px rgba(76,175,80,0.6);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(76,175,80,0.4); }
+  50% { box-shadow: 0 0 12px rgba(76,175,80,0.8); }
+}
+
+.sub-active-text {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4CAF50;
+}
+
+.sub-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.sub-info-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 2px;
+  padding: 14px 16px;
+}
+
+.sub-info-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 6px;
+}
+
+.sub-info-value {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+}
+
+/* Красный если мало дней */
+.sub-days--warning { color: #FF9800 !important; }
+
+/* Прогресс-бар */
+.sub-progress { display: flex; flex-direction: column; gap: 8px; }
+
+.sub-progress-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sub-progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 2px;
+  transition: width .4s ease;
+}
+
+.sub-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.05em;
+}
+
+.btn-cancel-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  color: rgba(220,60,60,0.5);
+  cursor: pointer;
+  padding: 0;
+  width: fit-content;
+  transition: color .2s;
+}
+
+.btn-cancel-sub:hover { color: #DC3C3C; }
+
+/* Нет подписки */
+.sub-empty {
+  padding: 32px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sub-empty-text {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.3);
+}
+
+.btn-subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #FFFFFF;
+  color: #06080F;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: opacity .2s;
+}
+
+.btn-subscribe:hover { opacity: 0.85; }
 
 </style>

@@ -111,9 +111,12 @@
   </div>
 
 
+
       <p>© 2024 NUTRIPRO — ТВОЙ ПЕРСОНАЛЬНЫЙ ТРЕКЕР</p>
   </footer>
   </div>
+
+
 
 </template>
 
@@ -174,10 +177,12 @@ body { font-family: 'Inter', sans-serif; background: #06080F; color: #FFFFFF; }
 
 
 
+
 }
 
 html {
   scroll-behavior: smooth;
+
 
 }
 
