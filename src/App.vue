@@ -31,12 +31,13 @@ function logout() {
   <header class="header">
     <RouterLink to="/" class="logo">FITNESS</RouterLink>
 
-    <nav class="nav-links">
-      <RouterLink to="/workout" class="nav-link">Тренировки</RouterLink>
-      <RouterLink to="/nutrition" class="nav-link">Питание</RouterLink>
-      <RouterLink to="/program" class="nav-link">Моя программа</RouterLink>
-      <RouterLink to="/supplements" class="nav-link">Спортпит</RouterLink>
-    </nav>
+  <nav class="nav-links">
+    <RouterLink to="/workout" class="nav-link">Тренировки</RouterLink>
+    <RouterLink to="/nutrition" class="nav-link">Питание</RouterLink>
+    <RouterLink to="/program" class="nav-link">Моя программа</RouterLink>
+    <RouterLink to="/journal" class="nav-link">Прогресс</RouterLink>    <!-- новая ссылка -->
+    <RouterLink to="/supplements" class="nav-link">Спортпит</RouterLink>
+  </nav>
 
     <div class="nav-right">
       <!-- Если залогинен — показываем иконку профиля и выйти -->

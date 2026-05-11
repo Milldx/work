@@ -14,6 +14,7 @@
             <RouterLink to="/workout" class="footer-link">Тренировки</RouterLink>
             <RouterLink to="/nutrition" class="footer-link">Питание</RouterLink>
             <RouterLink to="/program" class="footer-link">Моя программа</RouterLink>
+            <RouterLink to="/journal" class="footer-link">Журнал прогресса</RouterLink>   <!-- новая ссылка -->
           </div>
           <div class="footer-col">
             <p class="footer-col-title">Аккаунт</p>
