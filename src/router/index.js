@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import HomeView from '../views/HomeView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import SurveyView from '../views/SurveyView.vue'
@@ -34,6 +35,17 @@ const router = createRouter({
     // Страница 404 — ловит все неизвестные адреса
     { path: '/:pathMatch(.*)*', component: NotFoundView },
   ],
+
+import App from '../App.vue'
+
+const routes = [
+  { path: '/', component: App }
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+
 })
 
 // Навигационный guard — проверяет каждый переход

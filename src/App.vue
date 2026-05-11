@@ -1,33 +1,5 @@
-<script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import AppFooter from './components/AppFooter.vue'
-
-const router = useRouter()
-const route = useRoute()
-
-// Текущий пользователь — null если не залогинен
-const currentUser = ref(null)
-
-// Проверяем localStorage при загрузке
-onMounted(function() {
-  currentUser.value = JSON.parse(localStorage.getItem('currentUser') || 'null')
-})
-
-// Следим за сменой маршрута — обновляем пользователя
-// Это нужно чтобы кнопка скрылась сразу после логина
-watch(route, function() {
-  currentUser.value = JSON.parse(localStorage.getItem('currentUser') || 'null')
-})
-
-function logout() {
-  localStorage.removeItem('currentUser')
-  currentUser.value = null
-  router.push('/')
-}
-</script>
-
 <template>
+
   <header class="header">
     <RouterLink to="/" class="logo">FITNESS</RouterLink>
 
@@ -77,9 +49,70 @@ function logout() {
 </main>
 
   <AppFooter />
+
+  <div id="app">
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="logo-section">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="logo-icon">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <h2 class="logo">NUTRIPRO</h2>
+        </div>
+      </div>
+    </nav>
+    
+    <main>
+      <section id="nutrition" class="section">
+        <NutritionView />
+      </section>
+      
+      <section id="supplements" class="section">
+        <SupplementsView />
+      </section>
+    </main>
+    
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-icons">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p>© 2024 NUTRIPRO — ТВОЙ ПЕРСОНАЛЬНЫЙ ТРЕКЕР</p>
+      </div>
+    </footer>
+  </div>
+
 </template>
 
+<script>
+import NutritionView from './views/NutritionView.vue'
+import SupplementsView from './views/SupplementsView.vue'
+
+export default {
+  name: 'App',
+  components: {
+    NutritionView,
+    SupplementsView
+  }
+}
+</script>
+
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', sans-serif; background: #06080F; color: #FFFFFF; }
@@ -112,120 +145,117 @@ body { font-family: 'Inter', sans-serif; background: #06080F; color: #FFFFFF; }
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.05);
   z-index: 200;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+}
+
+body {
+  background: #06080F;
+  font-family: 'Inter', sans-serif;
+  color: #FFFFFF;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: rgba(6,8,15,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 20px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  color: #FFC107;
 }
 
 .logo {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: 0.3em;
-  color: #FFFFFF;
-  text-decoration: none;
-  margin-right: auto;
-}
-
-.nav-links {
-  display: flex;
-  gap: 40px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.nav-link {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
-  text-decoration: none;
-  transition: color .25s;
-}
-
-.nav-link:hover { color: #FFFFFF; }
-.nav-link.router-link-active { color: #FFFFFF; }
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-left: auto;
-}
-
-/* Имя пользователя в шапке */
-.user-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.5);
   letter-spacing: 0.05em;
+  font-size: 1.8rem;
+  color: white;
 }
 
-/* Круглая иконка профиля */
-.btn-profile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.5);
-  text-decoration: none;
-  overflow: hidden;
-  transition: all .2s;
-}
-
-.btn-profile:hover { border-color: rgba(255,255,255,0.5); }
-
-/* Аватарка в шапке */
-.profile-avatar {
+main {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  padding: 0 24px;
 }
 
-.btn-login {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
-  text-decoration: none;
-  transition: color .2s;
+.section {
+  scroll-margin-top: 80px;
+  padding: 40px 0;
 }
 
-.btn-login:hover { color: #FFFFFF; }
-
-.btn-register {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  background: #FFFFFF;
-  color: #06080F;
-  padding: 10px 24px;
-  border-radius: 2px;
-  text-decoration: none;
-  transition: opacity .2s;
+.footer {
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  text-align: center;
+  padding: 24px;
 }
 
-.btn-register:hover { opacity: 0.85; }
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-.btn-logout {
+.footer-icons {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.footer-icons svg {
+  color: rgba(255,255,255,0.3);
+  transition: color 0.2s;
+}
+
+.footer-icons svg:hover {
+  color: #FFC107;
+}
+
+.footer p {
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  background: none;
-  border: 1px solid rgba(255,255,255,0.12);
   color: rgba(255,255,255,0.35);
-  padding: 9px 20px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all .2s;
 }
 
-.btn-logout:hover {
-  border-color: rgba(255,255,255,0.4);
-  color: #FFFFFF;
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  main {
+    padding: 0 16px;
+  }
 }
 </style>
