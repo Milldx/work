@@ -1,13 +1,6 @@
 <template>
   <div class="supplements-view">
     <div class="hero-section">
-      <div class="hero-icon">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="4" y="4" width="16" height="16" rx="2"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-        </svg>
-      </div>
       <h1 class="page-title">СПОРТИВНОЕ ПИТАНИЕ</h1>
       <p class="subtitle">ПОДБЕРИ ДОБАВКИ ПОД СВОИ ЦЕЛИ</p>
     </div>
@@ -235,16 +228,7 @@ export default {
 .hero-section {
   text-align: center;
   margin-bottom: 48px;
-}
-
-.hero-icon {
-  margin-bottom: 16px;
-}
-
-.hero-icon svg {
-  color: #FFC107;
-  width: 48px;
-  height: 48px;
+  margin-top: 20px;
 }
 
 .page-title {
