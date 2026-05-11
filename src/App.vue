@@ -32,6 +32,7 @@ function logout() {
       <RouterLink to="/nutrition" class="nav-link">Питание</RouterLink>
       <RouterLink to="/supplements" class="nav-link">Спортпит</RouterLink>
       <RouterLink to="/program" class="nav-link">Моя программа</RouterLink>
+      <RouterLink to="/journal" class="nav-link">Прогресс</RouterLink>
     </nav>
 
     <div class="nav-right">
