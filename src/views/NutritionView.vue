@@ -680,7 +680,7 @@ export default {
 
 .macro-target {
   font-size: 0.75rem;
-  color: #FFC107;
+  color: #ffffff;
   margin-top: 6px;
 }
 
