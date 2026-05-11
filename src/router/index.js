@@ -11,21 +11,23 @@ import NotFoundView from '../views/NotFoundView.vue'
 import PayView from '../views/PayView.vue'
 import SupplementsView from '../views/SupplementsView.vue'
 import ExerciseView from '../views/ExerciseView.vue'
+import ProgressJournalView from '../views/ProgressJournalView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/',          component: HomeView },
-    { path: '/register',  component: RegisterView },
-    { path: '/survey',    component: SurveyView },
-    { path: '/login',     component: LoginView },
-    { path: '/workout',   component: WorkoutView },
+    { path: '/',             component: HomeView },
+    { path: '/register',     component: RegisterView },
+    { path: '/survey',       component: SurveyView },
+    { path: '/login',        component: LoginView },
+    { path: '/workout',      component: WorkoutView },
     { path: '/exercise/:id', component: ExerciseView },
-    { path: '/nutrition', component: NutritionView },
-    { path: '/supplements', component: SupplementsView },
-    { path: '/pay',       component: PayView },
-    { path: '/program',   component: ProgramView, meta: { requiresAuth: true } },
-    { path: '/profile',   component: ProfileView, meta: { requiresAuth: true } },
+    { path: '/nutrition',    component: NutritionView },
+    { path: '/supplements',  component: SupplementsView },
+    { path: '/pay',          component: PayView },
+    { path: '/program',      component: ProgramView,         meta: { requiresAuth: true } },
+    { path: '/profile',      component: ProfileView,         meta: { requiresAuth: true } },
+    { path: '/journal',      component: ProgressJournalView, meta: { requiresAuth: true } },
     { path: '/:pathMatch(.*)*', component: NotFoundView },
   ],
 })
