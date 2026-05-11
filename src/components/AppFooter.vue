@@ -26,7 +26,7 @@
       </div>
  
       <div class="footer-bottom">
-        <p class="footer-copy">© 2025 FITNESS. Учебный проект.</p>
+        <p class="footer-copy">© 2026 FITNESS. Учебный проект.</p>
         <p class="footer-copy">Все данные хранятся локально в браузере</p>
       </div>
  
