@@ -191,8 +191,6 @@
 </template>
 
 <script>
-import { onMounted } from 'vue'
-
 // БАЗА ПРОДУКТОВ
 const foodDatabase = {
   grains: [
@@ -246,7 +244,6 @@ const categories = [
   { id: 'dairy', name: 'МОЛОКО' },
   { id: 'eggs', name: 'ЯЙЦА' }
 ]
-// Вас уничтожат за эту часть кода)
 export default { 
   name: 'NutritionView',
   data() {
@@ -1043,4 +1040,3 @@ export default {
   margin-top: 6px;
 }
 </style>
-
