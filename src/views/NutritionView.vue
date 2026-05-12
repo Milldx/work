@@ -1,8 +1,8 @@
 <template>
  <div class="nutrition-view">
     <div class="hero-section">
-      <h1 class="page-title">ПИТАНИЕ</h1>
     </div>
+    <div class="glow"></div>
     
     <!-- КАЛЬКУЛЯТОР КАЛОРИЙ -->
     <div class="calculator-section">
@@ -573,10 +573,11 @@ export default {
 
 .page-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 4rem;
+  font-size: 2rem;
   letter-spacing: 0.05em;
   color: #FFFFFF;
-  margin-bottom: 8px;
+  margin-top: 60px;
+  margin-bottom: 0px;
 }
 
 .subtitle {
@@ -593,6 +594,7 @@ export default {
   border-radius: 2px;
   padding: 24px;
   margin-bottom: 32px;
+  margin-top: 100px;
 }
 
 .calculator-title {
@@ -818,6 +820,14 @@ export default {
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   color: rgba(255,255,255,0.4);
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 60% at 70% 30%, rgba(25, 70, 150, 0.3) 0%, transparent 65%);
+  pointer-events: none;
+  animation: glowPulse 6s ease-in-out infinite;
 }
 
 .totals {
