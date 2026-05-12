@@ -374,9 +374,9 @@ export default {
     },
     calculateTDEE() {
       // Защита от пустых значений
-      if (!this.userData.height || this.userData.height <= 0) this.userData.height = 170
-      if (!this.userData.weight || this.userData.weight <= 0) this.userData.weight = 70
-      if (!this.userData.age || this.userData.age <= 0) this.userData.age = 25
+      if (!this.userData.height || this.userData.height <= 0) this.userData.height =0
+      if (!this.userData.weight || this.userData.weight <= 0) this.userData.weight = 0
+      if (!this.userData.age || this.userData.age <= 0) this.userData.age = 0
       
       // 1. Расчет базового метаболизма (BMR)
       let bmr
@@ -403,8 +403,14 @@ export default {
       this.dailyNorm = Math.round(tdee)
       
       // 5. РАСЧЕТ БЕЛКОВ И ЖИРОВ (ЗАВИСЯТ ОТ ВЕСА!)
-      this.targetProtein = Math.round(this.userData.weight * 2)      // Белки = вес × 2
-      this.targetFat = Math.round(this.userData.weight * 0.9)        // Жиры = вес × 0.9
+      let genderPlus = 0  
+      if (this.userData.gender === "male") {
+        genderPlus = 10;
+      } else {
+        genderPlus = 15;
+      }
+      this.targetProtein = Math.round(this.userData.weight * 2 + this.userData.height + genderPlus)      // Белки = вес × 2
+      this.targetFat = Math.round(this.userData.weight * 0.9 + this.userData.height)        // Жиры = вес × 0.9
       
       // 6. РАСЧЕТ УГЛЕВОДОВ (оставшиеся калории)
       let carbsFromCal = (this.dailyNorm - (this.targetProtein * 4) - (this.targetFat * 9)) / 4
