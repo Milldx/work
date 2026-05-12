@@ -1,9 +1,8 @@
 <template>
- <div class="nutrition-view">
-    <div class="hero-section">
-    </div>
+  <div class="nutrition-view">
+    <div class="hero-section"></div>
     <div class="glow"></div>
-    
+
     <!-- КАЛЬКУЛЯТОР КАЛОРИЙ -->
     <div class="calculator-section">
       <h2 class="calculator-title">📊 КАЛЬКУЛЯТОР КАЛОРИЙ</h2>
@@ -44,9 +43,9 @@
             <option value="recomp">РЕКОМПОЗИЦИЯ</option>
           </select>
         </div>
+      </div>
     </div>
-  </div>
-    
+
     <!-- КАРТОЧКИ С НОРМАМИ -->
     <div class="macro-row">
       <div class="macro-card">
@@ -119,19 +118,15 @@
       <div class="modal-content">
         <h3>ВЫБЕРИ ПРОДУКТ</h3>
         <input type="text" v-model="searchQuery" placeholder="🔍 ПОИСК..." class="search-input">
-        
         <button class="custom-food-btn" @click="openCustomFoodModal">+ СОЗДАТЬ СВОЕ БЛЮДО</button>
-        
         <div class="category-tabs">
-          <button v-for="cat in categories" :key="cat.id" @click="activeCategory = cat.id" 
-                  :class="['category-btn', { active: activeCategory === cat.id }]">
+          <button v-for="cat in categories" :key="cat.id" @click="activeCategory = cat.id" :class="['category-btn', { active: activeCategory === cat.id }]">
             {{ cat.name }}
           </button>
           <button class="category-btn" :class="{ active: activeCategory === 'custom' }" @click="activeCategory = 'custom'">
             ⭐ МОИ БЛЮДА
           </button>
         </div>
-        
         <div class="food-list-modal">
           <div v-for="food in filteredFoods" :key="food.name" class="food-item-modal" @click="selectFood(food)">
             <div class="food-info">
@@ -144,7 +139,6 @@
             У вас пока нет своих блюд. Нажмите "СОЗДАТЬ СВОЕ БЛЮДО"
           </div>
         </div>
-        
         <div class="modal-buttons">
           <button @click="closeModal" class="cancel-btn">ЗАКРЫТЬ</button>
         </div>
@@ -155,32 +149,26 @@
     <div v-if="showCustomModal" class="modal" @click.self="closeCustomModal">
       <div class="modal-content custom-modal">
         <h3>🍽️ СОЗДАТЬ СВОЕ БЛЮДО</h3>
-        
         <div class="form-group-custom">
           <label>Название блюда</label>
           <input type="text" v-model="customFood.name" placeholder="Например: Мой фирменный салат">
         </div>
-        
         <div class="form-group-custom">
           <label>Белки на 100 г (г)</label>
           <input type="number" v-model.number="customFood.protein" step="0.1" placeholder="0">
         </div>
-        
         <div class="form-group-custom">
           <label>Жиры на 100 г (г)</label>
           <input type="number" v-model.number="customFood.fat" step="0.1" placeholder="0">
         </div>
-        
         <div class="form-group-custom">
           <label>Углеводы на 100 г (г)</label>
           <input type="number" v-model.number="customFood.carbs" step="0.1" placeholder="0">
         </div>
-        
         <div class="form-group-custom calories-info">
           <label>Калорийность (рассчитается автоматически)</label>
           <div class="calculated-calories">{{ calculatedCustomCalories }} ккал / 100 г</div>
         </div>
-        
         <div class="modal-buttons">
           <button @click="saveCustomFood" class="save-btn">💾 СОХРАНИТЬ БЛЮДО</button>
           <button @click="closeCustomModal" class="cancel-btn">ОТМЕНА</button>
@@ -191,7 +179,6 @@
 </template>
 
 <script>
-// БАЗА ПРОДУКТОВ
 const foodDatabase = {
   grains: [
     { name: "Гречневая крупа", protein: 13, fat: 3.5, carbs: 68, calories: 343 },
@@ -217,7 +204,7 @@ const foodDatabase = {
   fruits: [
     { name: "Яблоко", protein: 0.3, fat: 0.4, carbs: 13.8, calories: 52 },
     { name: "Банан", protein: 1.1, fat: 0.3, carbs: 22.8, calories: 89 },
-    { name: "Апельсин",蛋白: 0.9, fat: 0.2, carbs: 11.8, calories: 47 },
+    { name: "Апельсин", protein: 0.9, fat: 0.2, carbs: 11.8, calories: 47 },
     { name: "Киви", protein: 1.1, fat: 0.5, carbs: 14.7, calories: 61 }
   ],
   nuts: [
@@ -244,7 +231,8 @@ const categories = [
   { id: 'dairy', name: 'МОЛОКО' },
   { id: 'eggs', name: 'ЯЙЦА' }
 ]
-export default { 
+
+export default {
   name: 'NutritionView',
   data() {
     return {
@@ -358,6 +346,14 @@ export default {
       return foods
     }
   },
+  watch: {
+    'userData.height': { handler() { this.autoCalculate() }, deep: true },
+    'userData.weight': { handler() { this.autoCalculate() }, deep: true },
+    'userData.age': { handler() { this.autoCalculate() }, deep: true },
+    'userData.gender': { handler() { this.autoCalculate() }, deep: true },
+    'userData.activity': { handler() { this.autoCalculate() }, deep: true },
+    'userData.goal': { handler() { this.autoCalculate() }, deep: true }
+  },
   mounted() {
     this.loadFromLocal()
     this.loadCustomFoods()
@@ -368,29 +364,27 @@ export default {
   },
   methods: {
     autoCalculate() {
-      // Пересчитываем все при изменении любого параметра
       this.calculateTDEE()
       this.saveUserData()
     },
     calculateTDEE() {
-      // Защита от пустых значений
-      if (!this.userData.height || this.userData.height <= 0) this.userData.height =0
-      if (!this.userData.weight || this.userData.weight <= 0) this.userData.weight = 0
-      if (!this.userData.age || this.userData.age <= 0) this.userData.age = 0
-      
-      // 1. Расчет базового метаболизма (BMR)
+      let height = this.userData.height || 1
+      let weight = this.userData.weight || 1
+      let age = this.userData.age || 1
+
+      // 1. Базовый метаболизм (BMR)
       let bmr
       if (this.userData.gender === 'male') {
-        bmr = 88.36 + (13.4 * this.userData.weight) + (4.8 * this.userData.height) - (5.7 * this.userData.age)
+        bmr = 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)
       } else {
-        bmr = 447.6 + (9.2 * this.userData.weight) + (3.1 * this.userData.height) - (4.3 * this.userData.age)
+        bmr = 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)
       }
-      
-      // 2. Умножаем на активность
+
+      // 2. Активность
       const activityMap = { low: 1.2, medium: 1.55, high: 1.725 }
       let tdee = bmr * (activityMap[this.userData.activity] || 1.55)
-      
-      // 3. Корректируем под цель
+
+      // 3. Корректировка под цель
       if (this.userData.goal === 'cut') {
         tdee -= 500
       } else if (this.userData.goal === 'bulk') {
@@ -398,34 +392,24 @@ export default {
       } else if (this.userData.goal === 'recomp') {
         tdee -= 200
       }
-      
-      // 4. Устанавливаем норму калорий
+
+      // 4. Итоговая норма калорий
       this.dailyNorm = Math.round(tdee)
+
+      // 5. БЕЛКИ (зависят от веса и роста)
+      let proteinBase = weight * 1.8
+      let heightFactor = height / 100
+      this.targetProtein = Math.round(proteinBase + heightFactor * 10)
       
-      // 5. РАСЧЕТ БЕЛКОВ И ЖИРОВ (ЗАВИСЯТ ОТ ВЕСА!)
-      let genderPlus = 0  
-      if (this.userData.gender === "male") {
-        genderPlus = 10;
-      } else {
-        genderPlus = 15;
-      }
-      this.targetProtein = Math.round(this.userData.weight * 2 + this.userData.height + genderPlus)      // Белки = вес × 2
-      this.targetFat = Math.round(this.userData.weight * 0.9 + this.userData.height)        // Жиры = вес × 0.9
-      
-      // 6. РАСЧЕТ УГЛЕВОДОВ (оставшиеся калории)
-      let carbsFromCal = (this.dailyNorm - (this.targetProtein * 4) - (this.targetFat * 9)) / 4
-      this.targetCarbs = Math.max(Math.round(carbsFromCal), 80)      // Минимум 80г углеводов
-      
-      console.log('=== ПЕРЕСЧЕТ НОРМЫ ===')
-      console.log('Вес:', this.userData.weight, 'кг')
-      console.log('Белки:', this.targetProtein, 'г (вес × 2)')
-      console.log('Жиры:', this.targetFat, 'г (вес × 0.9)')
-      console.log('Калории:', this.dailyNorm, 'ккал')
-      console.log('Углеводы:', this.targetCarbs, 'г')
-    },
-    calculateAndSave() {
-      this.calculateTDEE()
-      this.saveUserData()
+      // 6. ЖИРЫ (зависят от веса и пола)
+      let fatBase = weight * 0.8
+      let genderFactor = this.userData.gender === 'male' ? 5 : 3
+      this.targetFat = Math.round(fatBase + genderFactor)
+
+      // 7. УГЛЕВОДЫ (рассчитываются из оставшихся калорий)
+      let caloriesFromProteinFat = (this.targetProtein * 4) + (this.targetFat * 9)
+      let remainingCalories = this.dailyNorm - caloriesFromProteinFat
+      this.targetCarbs = Math.max(Math.round(remainingCalories / 4), 80)
     },
     saveUserData() {
       const dataToSave = {
