@@ -2,7 +2,6 @@
  <div class="nutrition-view">
     <div class="hero-section">
       <h1 class="page-title">ПИТАНИЕ</h1>
-      <p class="subtitle">КОНТРОЛИРУЙ СВОЙ РАЦИОН</p>
     </div>
     
     <!-- КАЛЬКУЛЯТОР КАЛОРИЙ -->
@@ -38,7 +37,7 @@
         </div>
         <div class="calculator-field">
           <label>ЦЕЛЬ</label>
-          <select v-model="userData.goal" class="calc-select goal-select" @change="autoCalculate">
+          <select v-model="userData.goal" class="calc-select" @change="autoCalculate">
             <option value="cut">СУШКА</option>
             <option value="bulk">МАССАНАБОР</option>
             <option value="maintain">ПОДДЕРЖАНИЕ</option>
@@ -192,8 +191,6 @@
 </template>
 
 <script>
-import { onMounted } from 'vue'
-
 // БАЗА ПРОДУКТОВ
 const foodDatabase = {
   grains: [
@@ -247,8 +244,7 @@ const categories = [
   { id: 'dairy', name: 'МОЛОКО' },
   { id: 'eggs', name: 'ЯЙЦА' }
 ]
-
-export default {
+export default { 
   name: 'NutritionView',
   data() {
     return {
@@ -627,9 +623,9 @@ export default {
 .calc-input, .calc-select {
   width: 100%;
   padding: 12px;
-  background: rgba(255,255,255,0.05);
+  background: #06080F;
   border: 1px solid rgba(255,255,255,0.15);
-  color: #FFFFFF;
+  color: #ffffff;
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
   border-radius: 2px;
@@ -1044,4 +1040,3 @@ export default {
   margin-top: 6px;
 }
 </style>
-
