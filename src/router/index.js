@@ -22,7 +22,7 @@ const router = createRouter({
     { path: '/login',        component: LoginView },
     { path: '/workout',      component: WorkoutView },
     { path: '/exercise/:id', component: ExerciseView },
-    { path: '/nutrition',    component: NutritionView },
+    { path: '/nutrition',    component: NutritionView, meta: { requiresAuth: true } },
     { path: '/supplements',  component: SupplementsView },
     { path: '/pay',          component: PayView },
     { path: '/program',      component: ProgramView,         meta: { requiresAuth: true } },
