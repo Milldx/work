@@ -1,5 +1,6 @@
 <template>
   <div class="supplements-view">
+    <div class="glow"></div>
     <div class="hero-section">
       <h1 class="page-title">СПОРТИВНОЕ ПИТАНИЕ</h1>
       <p class="subtitle">ПОДБЕРИ ДОБАВКИ ПОД СВОИ ЦЕЛИ</p>
@@ -223,6 +224,14 @@ export default {
 <style scoped>
 .supplements-view {
   width: 100%;
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 50% 60% at 70% 30%, rgba(25, 70, 150, 0.3) 0%, transparent 65%);
+  pointer-events: none;
+  animation: glowPulse 6s ease-in-out infinite;
 }
 
 .hero-section {
