@@ -34,28 +34,31 @@
               v-for="(day, index) in calendarDays"
               :key="index"
               class="calendar-day"
-              :class="{ 'empty': !day, 'today': isToday(day) }"
+              :class="{ 'empty': !day, 'today': isToday(day), 'future': day && isFutureDate(day) }"
             >
               <div v-if="day" class="day-number">{{ day.date }}</div>
               <div v-if="day" class="day-checkboxes">
+                <!-- Тренировка -->
                 <label class="check-label" :title="'Тренировка\n' + getWorkoutTooltip(day)">
-                  <input type="checkbox" v-model="day.workout" @change="saveDay(day)">
+                  <input type="checkbox" v-model="day.workout" @change="saveDay(day)" :disabled="isFutureDate(day)">
                   <span class="check-icon workout-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   </span>
                 </label>
+                <!-- Вода -->
                 <label class="check-label" title="Вода (2.5 л)">
-                  <input type="checkbox" v-model="day.water" @change="saveDay(day)">
+                  <input type="checkbox" v-model="day.water" @change="saveDay(day)" :disabled="isFutureDate(day)">
                   <span class="check-icon water-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                     </svg>
                   </span>
                 </label>
+                <!-- Шаги -->
                 <label class="check-label" title="Шаги (15000)">
-                  <input type="checkbox" v-model="day.steps" @change="saveDay(day)">
+                  <input type="checkbox" v-model="day.steps" @change="saveDay(day)" :disabled="isFutureDate(day)">
                   <span class="check-icon steps-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -107,7 +110,7 @@
       </div>
     </div>
 
-    <!-- Тост-уведомления (не браузер) -->
+    <!-- Тост-уведомления -->
     <div v-if="toastMessage" class="toast">{{ toastMessage }}</div>
   </div>
 </template>
@@ -125,13 +128,15 @@ const calendarDays = ref([])
 const toastMessage = ref('')
 let toastTimeout = null
 
+// Получить сегодняшнюю дату в формате YYYY-MM-DD
+const todayStr = computed(() => new Date().toISOString().slice(0,10))
+
 function showToast(msg) {
   if (toastTimeout) clearTimeout(toastTimeout)
   toastMessage.value = msg
   toastTimeout = setTimeout(() => { toastMessage.value = '' }, 2000)
 }
 
-// Загрузка данных из localStorage
 function loadDayData(year, month, day) {
   const key = `daily_${user.value?.login}_${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
   const saved = localStorage.getItem(key)
@@ -142,6 +147,11 @@ function loadDayData(year, month, day) {
 }
 
 function saveDay(dayObj) {
+  // Запрет сохранения для будущих дат
+  if (isFutureDate(dayObj)) {
+    showToast('Нельзя редактировать будущие даты')
+    return
+  }
   const key = `daily_${user.value?.login}_${dayObj.fullDate}`
   localStorage.setItem(key, JSON.stringify({
     workout: dayObj.workout,
@@ -149,13 +159,11 @@ function saveDay(dayObj) {
     steps: dayObj.steps
   }))
   showToast('Сохранено ✓')
-  // пересчитаем статистику (вызовется реактивно)
 }
 
-// Построение календаря
 function buildCalendar() {
   const firstDayOfMonth = new Date(currentYear.value, currentMonth.value, 1)
-  const startDayOfWeek = firstDayOfMonth.getDay() // 0 вс, 1 пн ...
+  let startDayOfWeek = firstDayOfMonth.getDay()
   let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1
   const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
   const daysArray = []
@@ -174,7 +182,6 @@ function buildCalendar() {
   calendarDays.value = daysArray
 }
 
-// Навигация по месяцам
 function prevMonth() {
   if (currentMonth.value === 0) {
     currentMonth.value = 11
@@ -184,6 +191,7 @@ function prevMonth() {
   }
   buildCalendar()
 }
+
 function nextMonth() {
   if (currentMonth.value === 11) {
     currentMonth.value = 0
@@ -193,6 +201,7 @@ function nextMonth() {
   }
   buildCalendar()
 }
+
 function resetToToday() {
   const today = new Date()
   currentYear.value = today.getFullYear()
@@ -206,7 +215,12 @@ function isToday(day) {
   return day.date === today.getDate() && currentMonth.value === today.getMonth() && currentYear.value === today.getFullYear()
 }
 
-// Статистика
+function isFutureDate(day) {
+  if (!day) return false
+  // Сравниваем строки YYYY-MM-DD
+  return day.fullDate > todayStr.value
+}
+
 const totalDays = computed(() => calendarDays.value.filter(d => d !== null).length)
 const workoutDays = computed(() => calendarDays.value.filter(d => d && d.workout).length)
 const waterDays = computed(() => calendarDays.value.filter(d => d && d.water).length)
@@ -221,47 +235,45 @@ const totalActivityPercent = computed(() => {
   return ((totalChecks / maxChecks) * 100).toFixed(1)
 })
 
-// Быстрые отметки на сегодня
 function markTodayWorkout() {
   const today = new Date()
   if (today.getMonth() !== currentMonth.value || today.getFullYear() !== currentYear.value) {
-    showToast('Сегодня не в текущем месяце. Переключитесь на текущий месяц.')
+    showToast('Переключитесь на текущий месяц, чтобы отметить сегодняшний день')
     return
   }
   const dayObj = calendarDays.value.find(d => d && d.date === today.getDate())
-  if (dayObj && !dayObj.workout) {
+  if (dayObj && !dayObj.workout && !isFutureDate(dayObj)) {
     dayObj.workout = true
     saveDay(dayObj)
   } else if (dayObj && dayObj.workout) {
     showToast('Тренировка уже отмечена')
   } else {
-    showToast('Сегодня нет ячейки?')
+    showToast('Не удалось найти сегодняшний день')
   }
 }
+
 function markTodayAll() {
   const today = new Date()
   if (today.getMonth() !== currentMonth.value || today.getFullYear() !== currentYear.value) {
-    showToast('Сегодня не в текущем месяце. Переключитесь на текущий месяц.')
+    showToast('Переключитесь на текущий месяц, чтобы отметить всё')
     return
   }
   const dayObj = calendarDays.value.find(d => d && d.date === today.getDate())
-  if (dayObj) {
+  if (dayObj && !isFutureDate(dayObj)) {
     dayObj.workout = true
     dayObj.water = true
     dayObj.steps = true
     saveDay(dayObj)
   } else {
-    showToast('Сегодня нет ячейки?')
+    showToast('Не удалось найти сегодняшний день')
   }
 }
 
-// Тултип для тренировки (можно просто текст)
 function getWorkoutTooltip(day) {
   if (day.workout) return 'Тренировка выполнена'
-  return 'Отметить тренировку'
+  return isFutureDate(day) ? 'Нельзя отметить будущие даты' : 'Отметить тренировку'
 }
 
-// Загрузка пользователя
 function loadUser() {
   const stored = localStorage.getItem('currentUser')
   if (stored) {
@@ -274,7 +286,6 @@ onMounted(() => {
   loadUser()
 })
 
-// computed для отображения месяца и года
 const currentMonthYear = computed(() => {
   const date = new Date(currentYear.value, currentMonth.value)
   return date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' })
@@ -447,6 +458,10 @@ const currentMonthYear = computed(() => {
   border-color: var(--accent);
   background: rgba(59,130,246,0.05);
 }
+.calendar-day.future {
+  opacity: 0.65;
+  background: rgba(0,0,0,0.1);
+}
 .day-number {
   font-size: 14px;
   font-weight: 500;
@@ -464,6 +479,11 @@ const currentMonthYear = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+.check-label input:disabled + .check-icon {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.02);
 }
 .check-label input {
   position: absolute;
